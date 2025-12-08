@@ -50,11 +50,17 @@
       }
     }
 
-    function shareGame() {
-      window.open("https://t.me/TheSheba_bot?start=share", "_blank");
-      const status = document.getElementById('status');
-      status.textContent = "📤 Invitation link opened. Share with friends!";
-      status.style.color = "blue";
+ 
+  function shareGame() {
+    // This uses Telegram WebApp API
+    const referralLink = "https://t.me/TheSheba_bot?start=ref_" + Telegram.WebApp.initDataUnsafe.user.id;
+
+    Telegram.WebApp.openTelegramLink(
+      "https://t.me/share/url?url=" + encodeURIComponent(referralLink) +
+      "&text=" + encodeURIComponent("Join me in The Sheba Game 🎮!")
+    );
+
+
     }
   </script>
 </body>
