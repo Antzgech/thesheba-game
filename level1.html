@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>The Sheba Game - Level 1</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Level 1: Queen Sheba Quiz</h1>
+    <img src="queen_sheba.png" alt="Queen Sheba" class="hero" />
+
+    <div class="question">
+      <p>Q1: Who was Queen Sheba said to visit?</p>
+      <input type="text" id="q1" placeholder="Your answer" />
+    </div>
+
+    <div class="question">
+      <p>Q2: Which kingdom did Queen Sheba rule?</p>
+      <input type="text" id="q2" placeholder="Your answer" />
+    </div>
+
+    <a class="btn" href="https://www.youtube.com/@SabawianProduction" target="_blank">Subscribe on YouTube</a>
+    <button class="btn" onclick="submitAnswers()">Submit Answers</button>
+    <button class="btn" onclick="shareGame()">Invite Friends</button>
+    <p id="status"></p>
+
+    <p><a class="btn" href="index.html">Back to Home</a></p>
+  </div>
+
+  <script>
+    function submitAnswers() {
+      const q1 = document.getElementById('q1').value.trim().toLowerCase();
+      const q2 = document.getElementById('q2').value.trim().toLowerCase();
+      const status = document.getElementById('status');
+
+      const correct1 = ["king solomon", "solomon"];
+      const correct2 = ["sheba", "saba", "aksum", "axum"]; // accept variants
+
+      const isQ1 = correct1.includes(q1);
+      const isQ2 = correct2.includes(q2);
+
+      if (isQ1 && isQ2) {
+        status.textContent = "✅ Correct! Level 2 unlocked.";
+        status.style.color = "green";
+        localStorage.setItem("level2Unlocked", "true");
+      } else {
+        status.textContent = "❌ Not quite. Try again.";
+        status.style.color = "red";
+      }
+    }
+
+    function shareGame() {
+      window.open("https://t.me/TheSheba_bot?start=share", "_blank");
+      const status = document.getElementById('status');
+      status.textContent = "📤 Invitation link opened. Share with friends!";
+      status.style.color = "blue";
+    }
+  </script>
+</body>
+</html>

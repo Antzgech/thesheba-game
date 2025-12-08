@@ -1,115 +1,41 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>The Sheba Game - Level 1</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-    .container {
-      background: #fff;
-      padding: 20px;
-      max-width: 500px;
-      width: 90%;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      border-radius: 10px;
-      text-align: center;
-    }
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    .question {
-      margin: 15px 0;
-      font-size: 18px;
-    }
-    input[type="text"] {
-      width: 90%;
-      padding: 10px;
-      font-size: 16px;
-      margin-top: 5px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    button {
-      padding: 10px 20px;
-      margin: 10px 5px;
-      font-size: 16px;
-      border: none;
-      border-radius: 5px;
-      background-color: #8B4513;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #A0522D;
-    }
-    a {
-      display: inline-block;
-      margin-top: 15px;
-      font-size: 16px;
-      color: #1a73e8;
-      text-decoration: none;
-    }
-    #status {
-      margin-top: 15px;
-      font-weight: bold;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <title>The Sheba Game</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
-    <h1>Level 1: Queen Sheba Quiz</h1>
-    <img src="queen_sheba.png" alt="Queen Sheba">
-    
-    <div class="question">
-      <p>Q1: Who was Queen Sheba said to visit?</p>
-      <input type="text" id="q1" placeholder="Your answer">
+    <h1>The Sheba Game</h1>
+    <img src="queen_sheba.png" alt="Queen Sheba" class="hero" />
+    <p>Progress unlocks levels as you learn and compete.</p>
+
+    <div class="levels">
+      <a class="btn" href="level1.html">Start Level 1</a>
+      <a class="btn" id="level2Btn" href="level2.html">Go to Level 2</a>
+      <a class="btn" id="level3Btn" href="level3.html">Go to Level 3</a>
     </div>
-    
-    <div class="question">
-      <p>Q2: Which kingdom did Queen Sheba rule?</p>
-      <input type="text" id="q2" placeholder="Your answer">
-    </div>
-    
-    <button onclick="submitAnswers()">Submit Answers</button>
-    <button onclick="shareGame()">Share with 5 Friends</button>
-    
+
     <p id="status"></p>
-    
-    <a href="https://www.youtube.com/@SabawianProduction" target="_blank">📺 Subscribe to Sabawian Production on YouTube</a>
   </div>
 
   <script>
-    function submitAnswers() {
-      const q1 = document.getElementById('q1').value.trim();
-      const q2 = document.getElementById('q2').value.trim();
-      const status = document.getElementById('status');
-      if (q1 && q2) {
-        status.innerText = "✅ Answers submitted!";
-        status.style.color = "green";
-      } else {
-        status.innerText = "❌ Please answer both questions.";
-        status.style.color = "red";
-      }
-    }
+    // Lock levels based on localStorage flags set by levels
+    const l2Unlocked = localStorage.getItem("level2Unlocked") === "true";
+    const l3Unlocked = localStorage.getItem("level3Unlocked") === "true";
 
-    function shareGame() {
-      window.open("https://t.me/TheSheba_bot?start=share", "_blank");
-      document.getElementById('status').innerText = "📤 Shared to friends!";
-      document.getElementById('status').style.color = "blue";
+    const l2Btn = document.getElementById("level2Btn");
+    const l3Btn = document.getElementById("level3Btn");
+    const status = document.getElementById("status");
+
+    if (!l2Unlocked) {
+      l2Btn.classList.add("disabled");
+      l2Btn.onclick = (e) => { e.preventDefault(); status.textContent = "Complete Level 1 to unlock Level 2."; status.style.color = "red"; };
+    }
+    if (!l3Unlocked) {
+      l3Btn.classList.add("disabled");
+      l3Btn.onclick = (e) => { e.preventDefault(); status.textContent = "Complete Level 2 to unlock Level 3."; status.style.color = "red"; };
     }
   </script>
 </body>

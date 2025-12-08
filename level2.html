@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>The Sheba Game - Level 2</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Level 2: IT Fundamentals Quiz</h1>
+    <p id="timer">Time left: 30s</p>
+
+    <div class="question">
+      <p>Q1: Which device connects computers in a network?</p>
+      <label><input type="radio" name="q1" value="Router"> Router</label><br />
+      <label><input type="radio" name="q1" value="Monitor"> Monitor</label><br />
+      <label><input type="radio" name="q1" value="Keyboard"> Keyboard</label>
+    </div>
+
+    <div class="question">
+      <p>Q2: What does UPS stand for?</p>
+      <label><input type="radio" name="q2" value="Uninterruptible Power Supply"> Uninterruptible Power Supply</label><br />
+      <label><input type="radio" name="q2" value="Universal Port System"> Universal Port System</label><br />
+      <label><input type="radio" name="q2" value="User Power Setup"> User Power Setup</label>
+    </div>
+
+    <div class="question">
+      <p>Q3: Which port is commonly used for wired networking?</p>
+      <label><input type="radio" name="q3" value="RJ45"> RJ45</label><br />
+      <label><input type="radio" name="q3" value="HDMI"> HDMI</label><br />
+      <label><input type="radio" name="q3" value="VGA"> VGA</label>
+    </div>
+
+    <button class="btn" onclick="submitQuiz()">Submit Answers</button>
+    <p id="result"></p>
+    <p><a class="btn" href="index.html">Back to Home</a></p>
+  </div>
+
+  <script>
+    let timeLeft = 30;
+    const timerElement = document.getElementById("timer");
+    const countdown = setInterval(() => {
+      timeLeft--;
+      timerElement.textContent = "Time left: " + timeLeft + "s";
+      if (timeLeft <= 0) {
+        clearInterval(countdown);
+        submitQuiz();
+      }
+    }, 1000);
+
+    function submitQuiz() {
+      clearInterval(countdown);
+      let score = 0;
+
+      const q1 = document.querySelector('input[name="q1"]:checked');
+      const q2 = document.querySelector('input[name="q2"]:checked');
+      const q3 = document.querySelector('input[name="q3"]:checked');
+
+      if (q1 && q1.value === "Router") score += 10; else score -= 5;
+      if (q2 && q2.value === "Uninterruptible Power Supply") score += 10; else score -= 5;
+      if (q3 && q3.value === "RJ45") score += 10; else score -= 5;
+
+      const result = document.getElementById("result");
+      if (score >= 20) {
+        result.textContent = "🎉 You scored " + score + " points! Level 3 unlocked!";
+        result.style.color = "green";
+        localStorage.setItem("level3Unlocked", "true");
+      } else {
+        result.textContent = "❌ You scored " + score + " points. Try again!";
+        result.style.color = "red";
+      }
+    }
+  </script>
+</body>
+</html>

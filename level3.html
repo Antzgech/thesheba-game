@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>The Sheba Game - Level 3</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Level 3: Kombate Mode</h1>
+    <p>Answer fast. +10 for correct, -5 for wrong. 5 questions total.</p>
+
+    <div id="game">
+      <p id="qText"></p>
+      <div id="choices"></div>
+      <p id="progress">Question <span id="curr">1</span>/5</p>
+      <p id="score">Score: 0</p>
+      <button class="btn" id="nextBtn">Next</button>
+    </div>
+
+    <p id="final"></p>
+    <p><a class="btn" href="index.html">Back to Home</a></p>
+  </div>
+
+  <script>
+    const pool = [
+      { q: "Which tool checks network connectivity?", choices: ["ping", "mkdir", "cls"], ans: "ping" },
+      { q: "Safe way to remove dust from a PC?", choices: ["Compressed air", "Water rinse", "Oil cloth"], ans: "Compressed air" },
+      { q: "Which is an operating system?", choices: ["Windows", "USB", "Ethernet"], ans: "Windows" },
+      { q: "TCP/IP layer for routing?", choices: ["Network layer", "Application layer", "Physical layer"], ans: "Network layer" },
+      { q: "Command to list files?", choices: ["ls/dir", "rm", "cd"], ans: "ls/dir" },
+      { q: "Device that splits broadcast domains?", choices: ["Router", "Hub", "Switch (L2)"], ans: "Router" },
+      { q: "Best password practice?", choices: ["Unique long passphrase", "Same password everywhere", "Birthdate"], ans: "Unique long passphrase" }
+    ];
+
+    let questions = [];
+    let idx = 0;
+    let score = 0;
+
+    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+
+    function start() {
+      questions = shuffle(pool).slice(0, 5);
+      idx = 0; score = 0;
+      document.getElementById("final").textContent = "";
+      render();
+    }
+
+    function render() {
+      const q = questions[idx];
+      document.getElementById("qText").textContent = q.q;
+      const choicesDiv = document.getElementById("choices");
+      choicesDiv.innerHTML = "";
+      shuffle([...q.choices]).forEach(choice => {
+        const btn = document.createElement("button");
+        btn.className = "btn";
+        btn.textContent = choice;
+        btn.onclick = () => {
+          if (choice === q.ans) score += 10; else score -= 5;
+          document.getElementById("score").textContent = "Score: " + score;
+          document.getElementById("nextBtn").disabled = false;
+        };
+        choicesDiv.appendChild(btn);
+      });
+      document.getElementById("curr").textContent = (idx + 1);
+      document.getElementById("nextBtn").disabled = true;
+    }
+
+    document.getElementById("nextBtn").onclick = () => {
+      idx++;
+      if (idx >= questions.length) {
+        const final = document.getElementById("final");
+        if (score >= 30) {
+          final.textContent = "🏆 Champion! Score " + score + ".";
+          final.style.color = "green";
+        } else {
+          final.textContent = "⚔️ Score " + score + ". Keep training!";
+          final.style.color = "orange";
+        }
+      } else {
+        render();
+      }
+    };
+
+    start();
+  </script>
+</body>
+</html>

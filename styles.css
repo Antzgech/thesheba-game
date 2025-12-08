@@ -1,0 +1,10 @@
+/* styles.css */
+body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; }
+.container { background: #fff; padding: 20px; margin: 30px auto; max-width: 640px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); text-align: center; }
+.hero { max-width: 100%; height: auto; border-radius: 10px; margin-bottom: 16px; }
+.question { margin: 16px 0; text-align: left; }
+input[type="text"] { width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; margin-top: 6px; }
+.btn { display: inline-block; padding: 10px 16px; margin: 8px; font-size: 16px; background: #8B4513; color: #fff; border-radius: 8px; text-decoration: none; }
+.btn:hover { background: #A0522D; }
+.disabled { pointer-events: none; opacity: 0.5; }
+#status { margin-top: 12px; font-weight: bold; }
