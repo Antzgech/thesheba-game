@@ -1,27 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>The Sheba Game</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <title>The Sheba Kombat</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
-    <h1>The Sheba Game</h1>
-    <img src="queen_sheba.png" alt="Queen Sheba" class="hero" />
-    <p>Progress unlocks levels as you learn and compete.</p>
+    <h1>🔥 The Sheba Game 🔥</h1>
+    <img src="queen_sheba.png" alt="Queen Sheba" class="hero">
+    <p>Welcome warrior! Progress through rounds to prove your strength.</p>
 
     <div class="levels">
-      <a class="btn" href="level1.html">Start Level 1</a>
-      <a class="btn" id="level2Btn" href="level2.html">Go to Level 2</a>
-      <a class="btn" id="level3Btn" href="level3.html">Go to Level 3</a>
+      <a class="btn" href="level1.html">Round 1: Training</a>
+      <a class="btn" id="level2Btn" href="level2.html">Round 2: Challenge</a>
+      <a class="btn" id="level3Btn" href="level3.html">Final Round: Kombat</a>
     </div>
 
     <p id="status"></p>
   </div>
 
   <script>
-    // Lock levels based on localStorage flags set by levels
     const l2Unlocked = localStorage.getItem("level2Unlocked") === "true";
     const l3Unlocked = localStorage.getItem("level3Unlocked") === "true";
 
@@ -31,11 +30,11 @@
 
     if (!l2Unlocked) {
       l2Btn.classList.add("disabled");
-      l2Btn.onclick = (e) => { e.preventDefault(); status.textContent = "Complete Level 1 to unlock Level 2."; status.style.color = "red"; };
+      l2Btn.onclick = (e) => { e.preventDefault(); status.textContent = "⚠️ Defeat Round 1 first!"; };
     }
     if (!l3Unlocked) {
       l3Btn.classList.add("disabled");
-      l3Btn.onclick = (e) => { e.preventDefault(); status.textContent = "Complete Level 2 to unlock Level 3."; status.style.color = "red"; };
+      l3Btn.onclick = (e) => { e.preventDefault(); status.textContent = "⚠️ Defeat Round 2 first!"; };
     }
   </script>
 </body>
