@@ -1,85 +1,41 @@
 <!DOCTYPE html>
-<html lang="am">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ዙር 1 - ስልጠና</title>
+  <title>The Sheba Gift</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>⚔️ ዙር 1: ስልጠና ⚔️</h1>
-    <p>ቀላል ጥያቄዎችን በትክክል መልስ፣ ኃይልህን አሳይ!</p>
+    <h1>🔥 The Sheba Gift 🔥</h1>
+    <img src="queen_sheba.png" alt="Queen Sheba" class="hero">
+    <p>Welcome Player! Progress through rounds to get your 25 AirTime.</p>
 
-    <!-- Health bar -->
-    <div class="health-bar">
-      <div id="health" class="health-fill"></div>
+    <div class="levels">
+      <a class="btn" href="level1.html">Round 1: Training</a>
+      <a class="btn" id="level2Btn" href="level2.html">Round 2: Challenge</a>
+      <a class="btn" id="level3Btn" href="level3.html">Final Round: Kombat</a>
     </div>
 
-    <!-- Question 1 -->
-    <div class="question">
-      <p>Q1: ኮምፒዩተርን ከኤሌክትሪክ ኃይል መጠበቅ የሚረዳው መሣሪያ ምንድነው?</p>
-      <label><input type="radio" name="q1" value="UPS"> UPS</label><br>
-      <label><input type="radio" name="q1" value="Mouse"> ማውስ</label><br>
-      <label><input type="radio" name="q1" value="Monitor"> ሞኒተር</label>
-    </div>
-
-    <!-- Question 2 -->
-    <div class="question">
-      <p>Q2: ኮምፒዩተር የሚያስቀመጥበት ዋና መሣሪያ ምንድነው?</p>
-      <label><input type="radio" name="q2" value="Hard Disk"> ሃርድ ዲስክ</label><br>
-      <label><input type="radio" name="q2" value="Keyboard"> ኪቦርድ</label><br>
-      <label><input type="radio" name="q2" value="Printer"> ፕሪንተር</label>
-    </div>
-
-    <button class="btn" onclick="submitTraining()">ውጤት አሳይ</button>
     <p id="status"></p>
-    <p><a class="btn" href="index.html">🏠 ወደ መነሻ ገጽ</a></p>
   </div>
 
   <script>
-    let health = 100;
-    const healthBar = document.getElementById("health");
+    const l2Unlocked = localStorage.getItem("level2Unlocked") === "true";
+    const l3Unlocked = localStorage.getItem("level3Unlocked") === "true";
 
-    function updateHealth(value) {
-      health += value;
-      if (health > 100) health = 100;
-      if (health < 0) health = 0;
-      healthBar.style.width = health + "%";
+    const l2Btn = document.getElementById("level2Btn");
+    const l3Btn = document.getElementById("level3Btn");
+    const status = document.getElementById("status");
+
+    if (!l2Unlocked) {
+      l2Btn.classList.add("disabled");
+      l2Btn.onclick = (e) => { e.preventDefault(); status.textContent = "⚠️ Defeat Round 1 first!"; };
     }
-
-    function submitTraining() {
-      const q1 = document.querySelector('input[name="q1"]:checked');
-      const q2 = document.querySelector('input[name="q2"]:checked');
-      const status = document.getElementById("status");
-
-      if (q1 && q1.value === "UPS") {
-        updateHealth(+10);
-      } else {
-        updateHealth(-20);
-      }
-
-      if (q2 && q2.value === "Hard Disk") {
-        updateHealth(+10);
-      } else {
-        updateHealth(-20);
-      }
-
-      if (health > 50) {
-        status.textContent = "🎉 አሸነፈህ! ዙር 2 ተከፍቷል.";
-        status.style.color = "green";
-        localStorage.setItem("level2Unlocked", "true");
-
-        // Send score to bot
-        Telegram.WebApp.sendData(JSON.stringify({ level: 1, score: health }));
-      } else {
-        status.textContent = "❌ ተሸነፈህ! እንደገና ሞክር.";
-        status.style.color = "red";
-      }
+    if (!l3Unlocked) {
+      l3Btn.classList.add("disabled");
+      l3Btn.onclick = (e) => { e.preventDefault(); status.textContent = "⚠️ Defeat Round 2 first!"; };
     }
-
-    // Initialize health bar
-    updateHealth(0);
   </script>
 </body>
 </html>
