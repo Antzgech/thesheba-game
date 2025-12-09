@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <title>The Sheba Game - Level 1</title>
   <link rel="stylesheet" href="styles.css" />
+  <!-- Load Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="container">
@@ -35,7 +37,7 @@
       const status = document.getElementById('status');
 
       const correct1 = ["king solomon", "solomon"];
-      const correct2 = ["sheba", "saba", "aksum", "axum"]; // accept variants
+      const correct2 = ["sheba", "saba", "aksum", "axum"];
 
       const isQ1 = correct1.includes(q1);
       const isQ2 = correct2.includes(q2);
@@ -50,17 +52,16 @@
       }
     }
 
- 
-  function shareGame() {
-    // This uses Telegram WebApp API
-    const referralLink = "https://t.me/TheSheba_bot?start=ref_" + Telegram.WebApp.initDataUnsafe.user.id;
+    function shareGame() {
+      // Build referral link using Telegram WebApp user ID
+      const userId = Telegram.WebApp.initDataUnsafe?.user?.id || "0";
+      const referralLink = "https://t.me/TheSheba_bot?start=ref_" + userId;
 
-    Telegram.WebApp.openTelegramLink(
-      "https://t.me/share/url?url=" + encodeURIComponent(referralLink) +
-      "&text=" + encodeURIComponent("Join me in The Sheba Game 🎮!")
-    );
-
-
+      // Open Telegram's native share menu
+      Telegram.WebApp.openTelegramLink(
+        "https://t.me/share/url?url=" + encodeURIComponent(referralLink) +
+        "&text=" + encodeURIComponent("Lemasjemer Ezih Yechanu 🎮!")
+      );
     }
   </script>
 </body>
