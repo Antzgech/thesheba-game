@@ -1,75 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="am">
 <head>
-  <meta charset="UTF-8" />
-  <title>The Sheba Game - Level 2</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <title>Saba Gift - ዙር 2</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>Level 2: IT Fundamentals Quiz</h1>
-    <p id="timer">Time left: 30s</p>
+    <h1>⚡ ዙር 2: ችግኝ ⚡</h1>
+    <p>በጊዜ የተገደበ ትግል፣ ጠላቶች ከፍተኛ ጉዳት ያደርጋሉ።</p>
 
-    <div class="question">
-      <p>Q1: Which device connects computers in a network?</p>
-      <label><input type="radio" name="q1" value="Router"> Router</label><br />
-      <label><input type="radio" name="q1" value="Monitor"> Monitor</label><br />
-      <label><input type="radio" name="q1" value="Keyboard"> Keyboard</label>
+    <!-- Health bar -->
+    <div class="health-bar">
+      <div id="health" class="health-fill"></div>
     </div>
 
-    <div class="question">
-      <p>Q2: What does UPS stand for?</p>
-      <label><input type="radio" name="q2" value="Uninterruptible Power Supply"> Uninterruptible Power Supply</label><br />
-      <label><input type="radio" name="q2" value="Universal Port System"> Universal Port System</label><br />
-      <label><input type="radio" name="q2" value="User Power Setup"> User Power Setup</label>
+    <!-- Timer -->
+    <p>⏱️ ቀሪ ጊዜ: <span id="timer">30</span> ሰከንድ</p>
+
+    <!-- Battle buttons -->
+    <div class="battle">
+      <button class="btn" onclick="enemyAttack()">👊 ጠላት ግድያ</button>
+      <button class="btn" onclick="useBoost('energy')">⚡ ሙሉ ኃይል</button>
+      <button class="btn" onclick="useBoost('turbo')">🔥 ቱርቦ</button>
+      <button class="btn" onclick="useBoost('shield')">🛡️ ጋሻ</button>
     </div>
 
-    <div class="question">
-      <p>Q3: Which port is commonly used for wired networking?</p>
-      <label><input type="radio" name="q3" value="RJ45"> RJ45</label><br />
-      <label><input type="radio" name="q3" value="HDMI"> HDMI</label><br />
-      <label><input type="radio" name="q3" value="VGA"> VGA</label>
-    </div>
-
-    <button class="btn" onclick="submitQuiz()">Submit Answers</button>
-    <p id="result"></p>
-    <p><a class="btn" href="index.html">Back to Home</a></p>
+    <p id="status"></p>
+    <p><a class="btn" href="index.html">🏠 ወደ መነሻ ገጽ</a></p>
   </div>
 
   <script>
+    let health = 100;
+    let turboActive = false;
+    let shieldActive = false;
+    let score = 0;
     let timeLeft = 30;
-    const timerElement = document.getElementById("timer");
-    const countdown = setInterval(() => {
+    const healthBar = document.getElementById("health");
+    const status = document.getElementById("status");
+    const timerDisplay = document.getElementById("timer");
+
+    function updateHealth(value) {
+      health += value;
+      if (health > 100) health = 100;
+      if (health < 0) health = 0;
+      healthBar.style.width = health + "%";
+    }
+
+    function enemyAttack() {
+      if (shieldActive) {
+        status.textContent = "🛡️ ጋሻ ጉዳትን አልፎታል!";
+        shieldActive = false;
+      } else {
+        updateHealth(-30);
+        status.textContent = "👊 ጠላት ከፍተኛ ጉዳት አድርጎታል!";
+      }
+      score += turboActive ? 20 : 10;
+      turboActive = false;
+      checkVictory();
+    }
+
+    function useBoost(type) {
+      if (type === "energy") {
+        updateHealth(100 - health);
+        status.textContent = "⚡ ጤና ወደ 100 HP ተመልሷል!";
+      } else if (type === "turbo") {
+        turboActive = true;
+        status.textContent = "🔥 ቱርቦ ነቃ!";
+      } else if (type === "shield") {
+        shieldActive = true;
+        status.textContent = "🛡️ ጋሻ ተጠቀም!";
+      }
+    }
+
+    function checkVictory() {
+      if (health <= 0) {
+        status.textContent = "❌ ተሸነፈህ! እንደገና ሞክር.";
+        clearInterval(timerInterval);
+      }
+    }
+
+    function endRound() {
+      if (health > 0 && score >= 50) {
+        status.textContent = "🎉 አሸነፈህ! ዙር 3 ተከፍቷል.";
+        localStorage.setItem("level3Unlocked", "true");
+        Telegram.WebApp.sendData(JSON.stringify({ level: 2, score: score }));
+      } else {
+        status.textContent = "❌ ተሸነፈህ! እንደገና ሞክር.";
+      }
+    }
+
+    // Timer countdown
+    const timerInterval = setInterval(() => {
       timeLeft--;
-      timerElement.textContent = "Time left: " + timeLeft + "s";
+      timerDisplay.textContent = timeLeft;
       if (timeLeft <= 0) {
-        clearInterval(countdown);
-        submitQuiz();
+        clearInterval(timerInterval);
+        endRound();
       }
     }, 1000);
 
-    function submitQuiz() {
-      clearInterval(countdown);
-      let score = 0;
-
-      const q1 = document.querySelector('input[name="q1"]:checked');
-      const q2 = document.querySelector('input[name="q2"]:checked');
-      const q3 = document.querySelector('input[name="q3"]:checked');
-
-      if (q1 && q1.value === "Router") score += 10; else score -= 5;
-      if (q2 && q2.value === "Uninterruptible Power Supply") score += 10; else score -= 5;
-      if (q3 && q3.value === "RJ45") score += 10; else score -= 5;
-
-      const result = document.getElementById("result");
-      if (score >= 20) {
-        result.textContent = "🎉 You scored " + score + " points! Level 3 unlocked!";
-        result.style.color = "green";
-        localStorage.setItem("level3Unlocked", "true");
-      } else {
-        result.textContent = "❌ You scored " + score + " points. Try again!";
-        result.style.color = "red";
-      }
-    }
+    // Initialize health bar
+    updateHealth(0);
   </script>
 </body>
 </html>
