@@ -108,6 +108,7 @@ h2 {
   cursor: pointer;
 }
 
-.nav button:hover {
+.nav button.active {
   color: #ffd700;
+  font-weight: bold;
 }
