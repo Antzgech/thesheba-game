@@ -1,3 +1,6 @@
+// ==================== CONFIGURATION ====================
+const API_BASE_URL = "YOUR_API_URL_HERE"; // Replace with your backend API URL
+
 // ==================== GAME STATE ====================
 let gameState = {
   coins: 0,
@@ -36,7 +39,8 @@ let gameState = {
       type: "regen" 
     }
   ],
-  lastDailyReward: null
+  lastDailyReward: null,
+  needsSync: false
 };
 
 // ==================== DOM ELEMENTS ====================
@@ -55,7 +59,8 @@ const toastEl = document.getElementById("toast");
 
 // ==================== TELEGRAM WEB APP ====================
 let tg = null;
-let userId = "demo_user";
+let userId = null;
+let userName = "Player";
 let referralLink = "";
 
 function initTelegramWebApp() {
@@ -76,17 +81,82 @@ function initTelegramWebApp() {
       document.body.style.backgroundColor = tg.themeParams.bg_color;
     }
     
-    // Get user ID
+    // Get user data
     if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
       userId = tg.initDataUnsafe.user.id;
+      userName = tg.initDataUnsafe.user.first_name || "Player";
     }
     
     console.log("Telegram WebApp initialized");
+    console.log("User ID:", userId);
+  }
+  
+  // Fallback for testing outside Telegram
+  if (!userId) {
+    userId = "demo_" + Math.floor(Math.random() * 1000000);
+    console.warn("Running in demo mode (outside Telegram)");
   }
   
   // Set referral link with correct bot username
   referralLink = `https://t.me/TheSheba_bot?start=ref_${userId}`;
   referralLinkEl.textContent = referralLink;
+}
+
+// ==================== API FUNCTIONS ====================
+async function fetchUserData() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/user/${userId}`);
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+  } catch (error) {
+    console.error("Failed to fetch user data:", error);
+  }
+  return null;
+}
+
+async function syncGameState() {
+  if (!gameState.needsSync) return;
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/user/${userId}/sync`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        coins: gameState.coins,
+        level: gameState.level,
+        energy: gameState.energy,
+        maxEnergy: gameState.maxEnergy,
+        coinsPerTap: gameState.coinsPerTap,
+        energyRegenRate: gameState.energyRegenRate,
+        upgrades: gameState.upgrades,
+        lastDailyReward: gameState.lastDailyReward
+      })
+    });
+    
+    if (response.ok) {
+      gameState.needsSync = false;
+      console.log("Game state synced with server");
+    }
+  } catch (error) {
+    console.error("Failed to sync game state:", error);
+  }
+}
+
+async function fetchReferrals() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/user/${userId}/referrals`);
+    if (response.ok) {
+      const data = await response.json();
+      return data.friends || [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch referrals:", error);
+  }
+  return [];
 }
 
 // ==================== GAME FUNCTIONS ====================
@@ -96,11 +166,16 @@ function updateCoins() {
   coinsDisplayEl.textContent = gameState.coins.toLocaleString();
   
   // Update level
-  gameState.level = Math.floor(gameState.coins / 100) + 1;
+  const newLevel = Math.floor(gameState.coins / 100) + 1;
+  if (newLevel !== gameState.level) {
+    gameState.level = newLevel;
+    showToast(`🎉 Level Up! You are now Level ${gameState.level}!`);
+  }
   levelEl.textContent = gameState.level;
   
   renderUpgrades();
   saveGameState();
+  gameState.needsSync = true;
 }
 
 function updateEnergy() {
@@ -214,7 +289,7 @@ function claimDailyReward() {
   const today = new Date().toDateString();
   
   if (gameState.lastDailyReward === today) {
-    showToast("Daily reward already claimed today!");
+    showToast("⚠️ Daily reward already claimed today!");
     return;
   }
   
@@ -222,7 +297,7 @@ function claimDailyReward() {
   gameState.lastDailyReward = today;
   
   updateCoins();
-  showToast("Daily reward claimed: +50 Gifts!");
+  showToast("✅ Daily reward claimed: +50 Gifts!");
   
   if (tg && tg.HapticFeedback) {
     tg.HapticFeedback.notificationOccurred('success');
@@ -232,7 +307,7 @@ function claimDailyReward() {
 function joinChannelReward() {
   gameState.coins += 100;
   updateCoins();
-  showToast("Reward claimed: +100 Gifts!");
+  showToast("✅ Reward claimed: +100 Gifts!");
   
   // Open Telegram channel
   if (tg && tg.openTelegramLink) {
@@ -245,7 +320,7 @@ function joinChannelReward() {
 function subscribeChannelReward() {
   gameState.coins += 200;
   updateCoins();
-  showToast("Reward claimed: +200 Gifts!");
+  showToast("✅ Reward claimed: +200 Gifts!");
   
   // Open YouTube channel
   if (tg && tg.openLink) {
@@ -259,7 +334,7 @@ function subscribeChannelReward() {
 function copyReferral() {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(referralLink).then(() => {
-      showToast("Referral link copied to clipboard!");
+      showToast("📋 Referral link copied to clipboard!");
     }).catch(() => {
       fallbackCopyReferral();
     });
@@ -282,9 +357,9 @@ function fallbackCopyReferral() {
   
   try {
     document.execCommand('copy');
-    showToast("Referral link copied!");
+    showToast("📋 Referral link copied!");
   } catch (err) {
-    showToast("Failed to copy link");
+    showToast("❌ Failed to copy link");
   }
   
   document.body.removeChild(textArea);
@@ -305,6 +380,12 @@ function shareReferral() {
   }
 }
 
+async function loadReferrals() {
+  const friends = await fetchReferrals();
+  gameState.friends = friends;
+  renderFriends();
+}
+
 function renderFriends() {
   if (gameState.friends.length === 0) {
     friendsContainer.innerHTML = `
@@ -320,10 +401,10 @@ function renderFriends() {
       const friendEl = document.createElement("div");
       friendEl.className = "friend-item";
       friendEl.innerHTML = `
-        <div class="friend-avatar">${friend.name.charAt(0)}</div>
+        <div class="friend-avatar">${friend.name ? friend.name.charAt(0).toUpperCase() : '?'}</div>
         <div class="friend-info">
-          <div class="friend-name">${friend.name}</div>
-          <div class="friend-earnings">+${friend.earnings.toLocaleString()} earned</div>
+          <div class="friend-name">${friend.name || `User ${friend.id}`}</div>
+          <div class="friend-earnings">Level ${friend.level || 1} • ${friend.coins || 0} Gifts</div>
         </div>
       `;
       friendsContainer.appendChild(friendEl);
@@ -341,6 +422,11 @@ function setupNavigation() {
   navItems.forEach(navItem => {
     navItem.addEventListener("click", () => {
       const targetSection = navItem.dataset.section;
+      
+      // Load referrals when switching to friends section
+      if (targetSection === 'friends') {
+        loadReferrals();
+      }
       
       // Update active nav item
       navItems.forEach(item => item.classList.remove("active"));
@@ -434,6 +520,10 @@ function loadGameState() {
           gameState.maxEnergy
         );
         gameState.energy = Math.min(energyGained, gameState.maxEnergy);
+        
+        if (energyGained > 0) {
+          showToast(`⚡ Welcome back! +${energyGained} energy recharged!`);
+        }
       } else {
         gameState.energy = gameState.maxEnergy;
       }
@@ -474,14 +564,27 @@ function preventZoom() {
 }
 
 // ==================== INITIALIZATION ====================
-function init() {
+async function init() {
   initTelegramWebApp();
   preventZoom();
   
+  // Try to load from localStorage first
   const loaded = loadGameState();
   
-  if (!loaded) {
+  // Then try to sync with server
+  const serverData = await fetchUserData();
+  if (serverData) {
+    // Server data takes precedence if it has higher coins
+    if (serverData.coins > gameState.coins) {
+      gameState.coins = serverData.coins;
+      gameState.level = serverData.level || gameState.level;
+      console.log("Loaded game state from server");
+    }
+  }
+  
+  if (!loaded && !serverData) {
     gameState.energy = gameState.maxEnergy;
+    showToast(`👋 Welcome ${userName}! Start tapping to earn gifts!`);
   }
   
   updateCoins();
@@ -502,18 +605,29 @@ function init() {
   // Save game state periodically
   setInterval(saveGameState, 30000); // Every 30 seconds
   
-  // Save on page unload
-  window.addEventListener("beforeunload", saveGameState);
+  // Sync with server periodically
+  setInterval(syncGameState, 60000); // Every 60 seconds
+  
+  // Save and sync on page unload
+  window.addEventListener("beforeunload", () => {
+    saveGameState();
+    syncGameState();
+  });
   
   // Handle visibility change
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       saveGameState();
+      syncGameState();
+    } else {
+      // Reload referrals when app becomes visible
+      loadReferrals();
     }
   });
   
   console.log("Saba Gift initialized successfully!");
   console.log("User ID:", userId);
+  console.log("User Name:", userName);
   console.log("Referral Link:", referralLink);
 }
 
