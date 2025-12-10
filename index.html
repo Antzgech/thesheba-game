@@ -180,5 +180,318 @@
   <div id="toast" class="toast"></div>
 
   <script src="script.js"></script>
+  <!-- Add this modal HTML before closing </body> tag in index.html -->
+
+<!-- Phone Registration Modal -->
+<div id="phoneModal" class="phone-modal" style="display: none;">
+  <div class="phone-modal-content">
+    <div class="phone-modal-header">
+      <h2>📱 Register Phone Number</h2>
+      <p>Required to claim weekly airtime rewards!</p>
+    </div>
+    
+    <div class="phone-modal-body">
+      <div class="reward-info">
+        <div class="reward-icon">🏆</div>
+        <div class="reward-text">
+          <strong>Top 10 players each week win!</strong>
+          <div class="reward-amount">25 ETB Ethiotelecom Airtime</div>
+        </div>
+      </div>
+      
+      <form id="phoneForm" onsubmit="submitPhoneNumber(event)">
+        <div class="form-group">
+          <label for="phoneInput">Phone Number</label>
+          <input 
+            type="tel" 
+            id="phoneInput" 
+            placeholder="09XXXXXXXX" 
+            pattern="09[0-9]{8}" 
+            required
+            maxlength="10"
+          />
+          <small>Format: 09XXXXXXXX (Ethiopian number)</small>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" onclick="closePhoneModal()">Later</button>
+          <button type="submit" class="btn-submit">Register</button>
+        </div>
+      </form>
+      
+      <div class="requirements">
+        <p><strong>Requirements to win:</strong></p>
+        <ul>
+          <li>✅ Be in Top 10 leaderboard</li>
+          <li>✅ Subscribe to YouTube channel</li>
+          <li>✅ Join Telegram channel</li>
+          <li>✅ Register phone number</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Phone Modal Styles - Add to styles.css */
+.phone-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+.phone-modal-content {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 24px;
+  max-width: 500px;
+  width: 100%;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.phone-modal-header {
+  padding: 30px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.phone-modal-header h2 {
+  color: white;
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.phone-modal-header p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+}
+
+.phone-modal-body {
+  padding: 30px;
+  background: white;
+}
+
+.reward-info {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+  padding: 20px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.reward-icon {
+  font-size: 48px;
+}
+
+.reward-text strong {
+  display: block;
+  color: #333;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.reward-amount {
+  color: #667eea;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 16px;
+  transition: all 0.3s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group small {
+  display: block;
+  color: #999;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.form-actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 10px;
+}
+
+.btn-cancel, .btn-submit {
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-cancel {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+.btn-submit {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.requirements {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.requirements p {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.requirements ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.requirements li {
+  color: #666;
+  padding: 5px 0;
+  font-size: 14px;
+}
+</style>
+
+<script>
+// Phone Modal Functions - Add to script.js
+
+function showPhoneModal() {
+  document.getElementById('phoneModal').style.display = 'flex';
+}
+
+function closePhoneModal() {
+  document.getElementById('phoneModal').style.display = 'none';
+  // Save that user dismissed it
+  localStorage.setItem(`phoneModalDismissed_${userId}`, 'true');
+}
+
+async function submitPhoneNumber(event) {
+  event.preventDefault();
+  
+  const phoneInput = document.getElementById('phoneInput');
+  const phone = phoneInput.value.trim();
+  
+  // Validate format
+  if (!/^09[0-9]{8}$/.test(phone)) {
+    showToast('❌ Invalid phone format! Use: 09XXXXXXXX');
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/user/${userId}/update_contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone_number: phone,
+        username: userName
+      })
+    });
+    
+    if (response.ok) {
+      showToast('✅ Phone number registered successfully!');
+      closePhoneModal();
+      
+      // Save that user completed registration
+      localStorage.setItem(`phoneRegistered_${userId}`, 'true');
+      
+      // Show success message
+      setTimeout(() => {
+        showToast('🎉 You\'re now eligible for weekly airtime rewards!');
+      }, 2000);
+    } else {
+      showToast('❌ Failed to register phone number. Try again.');
+    }
+  } catch (error) {
+    console.error('Phone registration error:', error);
+    showToast('❌ Connection error. Please try again.');
+  }
+}
+
+// Show modal when user reaches 1000 coins (add to init function)
+function checkAndShowPhoneModal() {
+  // Don't show if already registered or dismissed
+  const dismissed = localStorage.getItem(`phoneModalDismissed_${userId}`);
+  const registered = localStorage.getItem(`phoneRegistered_${userId}`);
+  
+  if (dismissed || registered) {
+    return;
+  }
+  
+  // Show modal when user reaches 1000 coins
+  if (gameState.coins >= 1000) {
+    setTimeout(() => {
+      showPhoneModal();
+    }, 2000);
+  }
+}
+
+// Call this after coins update
+// Add to updateCoins() function:
+// checkAndShowPhoneModal();
+</script>
 </body>
 </html>
+
