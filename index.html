@@ -11,14 +11,18 @@
     <h1>🎁 Saba Gift 🎁</h1>
     <p>እንኳን ወደ Saba Gift ተመለከቱ! ዙሮችን በመሸነፍ ስጦታዎችን አግኝ።</p>
 
+    <!-- Levels -->
     <div class="levels">
       <a class="btn" href="level1.html">⚔️ ዙር 1: ስልጠና</a>
       <a class="btn" id="level2Btn" href="level2.html">⚡ ዙር 2: ችግኝ</a>
       <a class="btn" id="level3Btn" href="level3.html">🏆 መጨረሻ ዙር: ስጦታ ኮምባት</a>
     </div>
 
-    <button class="btn" onclick="inviteFriend()">👥 ጓደኛን ጋብዝ</button>
-    <button class="btn" onclick="openLeaderboard()">🏆 የአሸናፊዎች ዝርዝር</button>
+    <!-- Social buttons -->
+    <div class="actions">
+      <button class="btn" onclick="inviteFriend()">👥 ጓደኛን ጋብዝ</button>
+      <a class="btn" href="leaderboard.html">🏆 የአሸናፊዎች ዝርዝር</a>
+    </div>
 
     <p id="status"></p>
   </div>
@@ -48,10 +52,6 @@
         "https://t.me/share/url?url=" + encodeURIComponent(referralLink) +
         "&text=" + encodeURIComponent("እኔን በSaba Gift ጨዋታ ተቀላቅል 🎮!")
       );
-    }
-
-    function openLeaderboard() {
-      Telegram.WebApp.openTelegramLink("https://t.me/TheSheba_bot?start=leaderboard");
     }
   </script>
 </body>
