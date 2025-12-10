@@ -9,11 +9,21 @@
 <body>
   <div class="app">
     <!-- Main Content -->
-    <div id="content" class="content"></div>
+    <div id="content" class="content">
+      <!-- Default Home markup so coins/level/energy show immediately -->
+      <h2>Your Gifts</h2>
+      <div id="coins" class="coins">0</div>
+      <div id="level" class="level">Level 1</div>
+      <div class="tap-area" id="tapArea">🎁</div>
+      <div class="energy-bar">
+        <span id="energyText">1000/1000</span>
+        <div class="bar"><div id="energyFill"></div></div>
+      </div>
+    </div>
 
     <!-- Bottom Navigation -->
     <div class="nav">
-      <button id="tab-home" onclick="setTab('home')">🏠 Home</button>
+      <button id="tab-home" onclick="setTab('home')" class="active">🏠 Home</button>
       <button id="tab-mine" onclick="setTab('mine')">⛏️ Mine</button>
       <button id="tab-earn" onclick="setTab('earn')">🎯 Earn</button>
       <button id="tab-friends" onclick="setTab('friends')">👥 Friends</button>
