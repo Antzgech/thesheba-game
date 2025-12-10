@@ -54,7 +54,7 @@ h2 {
   transition: width 0.3s;
 }
 
-.task {
+.task, .upgrade {
   background: #222;
   padding: 10px;
   margin: 10px 0;
@@ -65,4 +65,21 @@ h2 {
   background: #333;
   padding: 10px;
   border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.friends-list {
+  background: #222;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.friends-list h3 {
+  margin-top: 0;
+  color: #ffd700;
+}
+
+.upgrade.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
