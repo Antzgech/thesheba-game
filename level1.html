@@ -1,68 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="am">
 <head>
-  <meta charset="UTF-8" />
-  <title>The Sheba Game - Level 1</title>
-  <link rel="stylesheet" href="styles.css" />
-  <!-- Load Telegram WebApp SDK -->
+  <meta charset="UTF-8">
+  <title>Saba Gift - ዙር 1</title>
+  <link rel="stylesheet" href="styles.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>Level 1: Queen Sheba Quiz</h1>
-    <img src="queen_sheba.png" alt="Queen Sheba" class="hero" />
+    <h1>⚔️ ዙር 1: ስልጠና ⚔️</h1>
+    <p>በመጀመሪያ ዙር ጠላትን በቀላሉ ሸነፍ፣ ጤናህን አስተካክል።</p>
 
-    <div class="question">
-      <p>Q1: Who was Queen Sheba said to visit?</p>
-      <input type="text" id="q1" placeholder="Your answer" />
+    <!-- Health bar -->
+    <div class="health-bar">
+      <div id="health" class="health-fill"></div>
     </div>
 
-    <div class="question">
-      <p>Q2: Which kingdom did Queen Sheba rule?</p>
-      <input type="text" id="q2" placeholder="Your answer" />
+    <!-- Enemy attack simulation -->
+    <div class="battle">
+      <button class="btn" onclick="enemyAttack()">👊 ጠላት ግድያ</button>
+      <button class="btn" onclick="useBoost('energy')">⚡ ሙሉ ኃይል</button>
+      <button class="btn" onclick="useBoost('turbo')">🔥 ቱርቦ</button>
+      <button class="btn" onclick="useBoost('shield')">🛡️ ጋሻ</button>
     </div>
 
-    <a class="btn" href="https://www.youtube.com/@SabawianProduction" target="_blank">Subscribe on YouTube</a>
-    <button class="btn" onclick="submitAnswers()">Submit Answers</button>
-    <button class="btn" onclick="shareGame()">Invite Friends</button>
     <p id="status"></p>
-
-    <p><a class="btn" href="index.html">Back to Home</a></p>
+    <p><a class="btn" href="index.html">🏠 ወደ መነሻ ገጽ</a></p>
   </div>
 
   <script>
-    function submitAnswers() {
-      const q1 = document.getElementById('q1').value.trim().toLowerCase();
-      const q2 = document.getElementById('q2').value.trim().toLowerCase();
-      const status = document.getElementById('status');
+    let health = 100;
+    let turboActive = false;
+    let shieldActive = false;
+    const healthBar = document.getElementById("health");
+    const status = document.getElementById("status");
 
-      const correct1 = ["king solomon", "solomon"];
-      const correct2 = ["sheba", "saba", "aksum", "axum"];
+    function updateHealth(value) {
+      health += value;
+      if (health > 100) health = 100;
+      if (health < 0) health = 0;
+      healthBar.style.width = health + "%";
+    }
 
-      const isQ1 = correct1.includes(q1);
-      const isQ2 = correct2.includes(q2);
-
-      if (isQ1 && isQ2) {
-        status.textContent = "✅ Correct! Level 2 unlocked.";
-        status.style.color = "green";
-        localStorage.setItem("level2Unlocked", "true");
+    function enemyAttack() {
+      if (shieldActive) {
+        status.textContent = "🛡️ ጋሻ ጉዳትን አልፎታል!";
+        shieldActive = false;
       } else {
-        status.textContent = "❌ Not quite. Try again.";
-        status.style.color = "red";
+        updateHealth(-20);
+        status.textContent = "👊 ጠላት ጉዳት አድርጎታል!";
+      }
+      checkVictory();
+    }
+
+    function useBoost(type) {
+      if (type === "energy") {
+        updateHealth(100 - health);
+        status.textContent = "⚡ ጤና ወደ 100 HP ተመልሷል!";
+      } else if (type === "turbo") {
+        turboActive = true;
+        status.textContent = "🔥 ቱርቦ ነቃ!";
+      } else if (type === "shield") {
+        shieldActive = true;
+        status.textContent = "🛡️ ጋሻ ተጠቀም!";
       }
     }
 
-    function shareGame() {
-      // Build referral link using Telegram WebApp user ID
-      const userId = Telegram.WebApp.initDataUnsafe?.user?.id || "0";
-      const referralLink = "https://t.me/TheSheba_bot?start=ref_" + userId;
-
-      // Open Telegram's native share menu
-      Telegram.WebApp.openTelegramLink(
-        "https://t.me/share/url?url=" + encodeURIComponent(referralLink) +
-        "&text=" + encodeURIComponent("Lemasjemer Ezih Yechanu 🎮!")
-      );
+    function checkVictory() {
+      if (health > 50) {
+        status.textContent = "🎉 አሸነፈህ! ዙር 2 ተከፍቷል.";
+        localStorage.setItem("level2Unlocked", "true");
+        Telegram.WebApp.sendData(JSON.stringify({ level: 1, score: health }));
+      } else if (health === 0) {
+        status.textContent = "❌ ተሸነፈህ! እንደገና ሞክር.";
+      }
     }
+
+    // Initialize health bar
+    updateHealth(0);
   </script>
 </body>
 </html>
