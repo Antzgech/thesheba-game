@@ -17,6 +17,9 @@ let upgrades = [
 
 // Tabs
 function setTab(tab) {
+  document.querySelectorAll(".nav button").forEach(btn => btn.classList.remove("active"));
+  document.getElementById(`tab-${tab}`).classList.add("active");
+
   if (tab === "home") renderHome();
   if (tab === "mine") renderMine();
   if (tab === "earn") renderEarn();
@@ -55,7 +58,7 @@ function renderEarn() {
       <button onclick="claimDailyReward()">Claim +5000</button>
     </div>
     <div class="task">
-      <span>📱 Join Telegram Channel</span>
+      <span>📱 Join Telegram Channel (@TheShebaBot)</span>
       <button onclick="joinChannelReward()">+10,000 coins</button>
     </div>
     <div class="task">
@@ -128,27 +131,4 @@ function claimDailyReward() {
   const lastClaim = localStorage.getItem("dailyRewardDate");
   const today = new Date().toDateString();
   if (lastClaim === today) {
-    alert("You already claimed today’s reward!");
-    return;
-  }
-  coins += 5000;
-  localStorage.setItem("dailyRewardDate", today);
-  updateCoins();
-}
-
-function joinChannelReward() {
-  coins += 10000;
-  updateCoins();
-  window.Telegram.WebApp.openTelegramLink("https://t.me/TheShebaBot");
-}
-
-function subscribeYouTube() {
-  coins += 20000;
-  updateCoins();
-  window.open("https://www.youtube.com/@YourChannelHere", "_blank");
-}
-
-// Referral
-function copyReferral() {
-  navigator.clipboard.writeText(referralLink);
-  alert("Referral link copied
+    alert("You already claimed today
