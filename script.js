@@ -119,16 +119,4 @@ function buyUpgrade(id) {
   coins -= upg.cost;
   if (upg.type === "tap") coinsPerTap += 1;
   if (upg.type === "energy") { maxEnergy += 500; energy += 500; }
-  upg.level += 1;
-  upg.cost = Math.floor(upg.cost * 2);
-  updateCoins();
-  updateEnergy();
-  renderUpgrades();
-}
-
-// Rewards
-function claimDailyReward() {
-  const lastClaim = localStorage.getItem("dailyRewardDate");
-  const today = new Date().toDateString();
-  if (lastClaim === today) {
-    alert("You already claimed today
+  upg
