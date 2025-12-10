@@ -1,6 +1,6 @@
 let coins = 0;
-let energy = 1000;
-let maxEnergy = 1000;
+let energy = 10;
+let maxEnergy = 10;
 let coinsPerTap = 1;
 let level = 1;
 
@@ -19,8 +19,8 @@ referralLinkEl.textContent = referralLink;
 
 // Upgrades data
 let upgrades = [
-  { id: 1, name: "Multitap", level: 1, cost: 2000, benefit: "+1 per tap", type: "tap" },
-  { id: 2, name: "Energy Limit", level: 1, cost: 2000, benefit: "+500 energy", type: "energy" }
+  { id: 1, name: "Multitap", level: 1, cost: 20, benefit: "+1 per tap", type: "tap" },
+  { id: 2, name: "Energy Limit", level: 1, cost: 20, benefit: "+5 energy", type: "energy" }
 ];
 
 // Render upgrades
@@ -49,8 +49,8 @@ function buyUpgrade(id) {
   if (upg.type === "tap") {
     coinsPerTap += 1;
   } else if (upg.type === "energy") {
-    maxEnergy += 500;
-    energy += 500;
+    maxEnergy += 5;
+    energy += 5;
   }
   upg.level += 1;
   upg.cost = Math.floor(upg.cost * 2);
@@ -73,7 +73,7 @@ function updateEnergy() {
 
 function updateCoins() {
   coinsEl.textContent = coins.toLocaleString();
-  level = Math.floor(coins / 10000) + 1;
+  level = Math.floor(coins / 100) + 1;
   levelEl.textContent = `Level ${level}`;
   renderUpgrades();
 }
@@ -89,24 +89,24 @@ tapArea.addEventListener("click", () => {
 
 // Rewards
 function claimDailyReward() {
-  coins += 5000;
+  coins += 50;
   updateCoins();
 }
 
 function joinChannelReward() {
-  coins += 10000;
+  coins += 100; // use the proper reward amount
   updateCoins();
   if (window.Telegram?.WebApp?.openTelegramLink) {
+    // This is a Telegram link, so openTelegramLink is correct
     window.Telegram.WebApp.openTelegramLink("https://t.me/TheShebaBot");
   }
 }
 
-function subscribChannelReward() {
-  coins += 10000;
+function subscribeChannelReward() {
+  coins += 200; // YouTube reward
   updateCoins();
-  if (window.Telegram?.WebApp?.openTelegramLink) {
-    window.Telegram.WebApp.openTelegramLink("https://https://www.youtube.com/@SabawianProduction");
-  }
+  // For external links, use window.open
+  window.open("https://www.youtube.com/@SabawianProduction", "_blank");
 }
 
 // Referral
