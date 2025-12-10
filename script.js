@@ -74,7 +74,7 @@ function initTelegramWebApp() {
   }
   
   // Set referral link
-  referralLink = `https://t.me/YourBot?start=ref_${userId}`;
+  referralLink = `@TheSheba_bot?start=ref_${userId}`;
   referralLinkEl.textContent = referralLink;
 }
 
