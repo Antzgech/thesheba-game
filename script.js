@@ -97,7 +97,15 @@ function joinChannelReward() {
   coins += 10000;
   updateCoins();
   if (window.Telegram?.WebApp?.openTelegramLink) {
-    window.Telegram.WebApp.openTelegramLink("https://t.me/your_channel_here");
+    window.Telegram.WebApp.openTelegramLink("https://t.me/TheShebaBot");
+  }
+}
+
+function subscribChannelReward() {
+  coins += 10000;
+  updateCoins();
+  if (window.Telegram?.WebApp?.openTelegramLink) {
+    window.Telegram.WebApp.openTelegramLink("https://https://www.youtube.com/@SabawianProduction");
   }
 }
 
