@@ -64,17 +64,28 @@ function initTelegramWebApp() {
     tg.ready();
     tg.expand();
     
+    // Enable full screen mode
+    tg.setHeaderColor('#0f0c29');
+    tg.setBackgroundColor('#0f0c29');
+    
+    // Disable vertical swipes
+    tg.disableVerticalSwipes();
+    
     // Set theme
-    document.body.style.backgroundColor = tg.themeParams.bg_color || "#0f0c29";
+    if (tg.themeParams && tg.themeParams.bg_color) {
+      document.body.style.backgroundColor = tg.themeParams.bg_color;
+    }
     
     // Get user ID
     if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
       userId = tg.initDataUnsafe.user.id;
     }
+    
+    console.log("Telegram WebApp initialized");
   }
   
-  // Set referral link
-  referralLink = `@TheSheba_bot?start=ref_${userId}`;
+  // Set referral link with correct bot username
+  referralLink = `https://t.me/TheSheba_bot?start=ref_${userId}`;
   referralLinkEl.textContent = referralLink;
 }
 
@@ -237,7 +248,11 @@ function subscribeChannelReward() {
   showToast("Reward claimed: +200 Gifts!");
   
   // Open YouTube channel
-  window.open("https://www.youtube.com/@SabawianProduction", "_blank");
+  if (tg && tg.openLink) {
+    tg.openLink("https://www.youtube.com/@SabawianProduction");
+  } else {
+    window.open("https://www.youtube.com/@SabawianProduction", "_blank");
+  }
 }
 
 // ==================== REFERRAL / FRIENDS ====================
@@ -276,12 +291,17 @@ function fallbackCopyReferral() {
 }
 
 function shareReferral() {
-  const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent("Join me in Saba Gift and earn rewards! 🎁")}`;
+  const shareText = "Join me in Saba Gift and earn rewards! 🎁";
+  const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(shareText)}`;
   
   if (tg && tg.openTelegramLink) {
     tg.openTelegramLink(shareUrl);
   } else {
     window.open(shareUrl, "_blank");
+  }
+  
+  if (tg && tg.HapticFeedback) {
+    tg.HapticFeedback.impactOccurred('medium');
   }
 }
 
@@ -330,6 +350,8 @@ function setupNavigation() {
       sections.forEach(section => {
         if (section.id === `${targetSection}Section`) {
           section.classList.add("active");
+          // Scroll to top of section
+          section.scrollTop = 0;
         } else {
           section.classList.remove("active");
         }
@@ -425,9 +447,36 @@ function loadGameState() {
   return false;
 }
 
+// ==================== PREVENT ZOOM & SCROLL ====================
+function preventZoom() {
+  // Prevent double-tap zoom
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', function(event) {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
+  
+  // Prevent pinch zoom
+  document.addEventListener('gesturestart', function(e) {
+    e.preventDefault();
+  });
+  
+  document.addEventListener('gesturechange', function(e) {
+    e.preventDefault();
+  });
+  
+  document.addEventListener('gestureend', function(e) {
+    e.preventDefault();
+  });
+}
+
 // ==================== INITIALIZATION ====================
 function init() {
   initTelegramWebApp();
+  preventZoom();
   
   const loaded = loadGameState();
   
@@ -445,13 +494,27 @@ function init() {
   // Event listeners
   tapArea.addEventListener("click", handleTap);
   
+  // Prevent context menu on long press
+  tapArea.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
+  
   // Save game state periodically
   setInterval(saveGameState, 30000); // Every 30 seconds
   
   // Save on page unload
   window.addEventListener("beforeunload", saveGameState);
   
+  // Handle visibility change
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      saveGameState();
+    }
+  });
+  
   console.log("Saba Gift initialized successfully!");
+  console.log("User ID:", userId);
+  console.log("Referral Link:", referralLink);
 }
 
 // Start the game when DOM is ready
