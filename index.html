@@ -2,77 +2,180 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Saba Gift</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Saba Gift - Tap to Earn</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <div class="app">
-    <!-- Home Section -->
-    <section class="home">
-      <h2>Your Gifts</h2>
-      <div id="coins" class="coins">0</div>
-      <div id="level" class="level">Level 1</div>
+    <!-- Top Stats Bar -->
+    <div class="top-bar">
+      <div class="stat-item">
+        <span class="stat-label">Balance</span>
+        <div id="coins" class="coins">0</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Level</span>
+        <div id="level" class="level-badge">1</div>
+      </div>
+    </div>
 
-      <div class="tap-area" id="tapArea">🎁</div>
+    <!-- Main Content Container -->
+    <div class="content-container">
+      <!-- Home Section -->
+      <section id="homeSection" class="section active">
+        <div class="home-content">
+          <div class="balance-display">
+            <div class="balance-icon">🎁</div>
+            <div id="coinsDisplay" class="balance-amount">0</div>
+            <div class="balance-label">Saba Gifts</div>
+          </div>
 
-      <div class="energy-bar">
-        <span id="energyText">10/10</span>
-        <div class="bar">
-          <div id="energyFill"></div>
+          <div class="tap-container">
+            <div class="tap-area" id="tapArea">
+              <div class="tap-circle">
+                <span class="tap-emoji">🎁</span>
+              </div>
+              <div class="tap-glow"></div>
+            </div>
+            <div id="clickAnimations" class="click-animations"></div>
+          </div>
+
+          <div class="energy-container">
+            <div class="energy-header">
+              <div class="energy-info">
+                <span class="energy-icon">⚡</span>
+                <span id="energyText" class="energy-text">10/10</span>
+              </div>
+              <span class="energy-regen">+1/sec</span>
+            </div>
+            <div class="energy-bar">
+              <div id="energyFill" class="energy-fill"></div>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Mine Section -->
-    <section class="mine">
-      <h2>Mine</h2>
-      <p>Upgrade your passive income</p>
-      <div id="upgrades"></div>
-    </section>
+      <!-- Mine Section -->
+      <section id="mineSection" class="section">
+        <div class="section-header">
+          <h2>⛏️ Mine</h2>
+          <p class="section-subtitle">Upgrade your earning power</p>
+        </div>
+        <div id="upgrades" class="upgrades-grid"></div>
+      </section>
 
-    <!-- Earn Section -->
-    <section class="earn">
-      <h2>Earn More</h2>
-      <div class="task">
-        <span>🎁 Daily Reward</span>
-        <button onclick="claimDailyReward()">Claim +50</button>
-      </div>
-      <div class="task">
-        <span>👥 Invite 3 Friends</span>
-        <span>+25,000 coins</span>
-      </div>
-      <div class="task">
-        <span>📱 Join Telegram Channel</span>
-        <button onclick="joinChannelReward()">+100 coins</button>
-      </div>
-      <div class="task">
-        <span>📱 Subscribe Youtube Channel</span>
-        <button onclick="subscribChannelReward()">+100 coins</button>
-      </div>
-      
-    </section>
+      <!-- Earn Section -->
+      <section id="earnSection" class="section">
+        <div class="section-header">
+          <h2>💰 Earn More</h2>
+          <p class="section-subtitle">Complete tasks and get rewards</p>
+        </div>
+        
+        <div class="tasks-container">
+          <div class="task-card daily-reward">
+            <div class="task-icon">🎁</div>
+            <div class="task-info">
+              <div class="task-title">Daily Reward</div>
+              <div class="task-reward">+50 Gifts</div>
+            </div>
+            <button class="task-btn" onclick="claimDailyReward()">Claim</button>
+          </div>
 
-    <!-- Friends Section -->
-    <section class="friends">
-      <h2>Invite Friends</h2>
-      <p>Get 10% from friends + 2.5% from their referrals</p>
-      <div class="referral">
-        <div id="referralLink"></div>
-        <button onclick="copyReferral()">Copy Link</button>
-        <button onclick="shareReferral()">Share</button>
-      </div>
+          <div class="task-card">
+            <div class="task-icon">👥</div>
+            <div class="task-info">
+              <div class="task-title">Invite 3 Friends</div>
+              <div class="task-reward">+25,000 Gifts</div>
+            </div>
+            <div class="task-status">0/3</div>
+          </div>
 
-      <div class="friends-list">
-        <h3>Your Friends</h3>
-        <div id="friendsContainer">No friends invited yet</div>
-      </div>
-    </section>
+          <div class="task-card">
+            <div class="task-icon">📱</div>
+            <div class="task-info">
+              <div class="task-title">Join Telegram Channel</div>
+              <div class="task-reward">+100 Gifts</div>
+            </div>
+            <button class="task-btn" onclick="joinChannelReward()">Join</button>
+          </div>
+
+          <div class="task-card">
+            <div class="task-icon">🎬</div>
+            <div class="task-info">
+              <div class="task-title">Subscribe YouTube Channel</div>
+              <div class="task-reward">+200 Gifts</div>
+            </div>
+            <button class="task-btn" onclick="subscribeChannelReward()">Subscribe</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Friends Section -->
+      <section id="friendsSection" class="section">
+        <div class="section-header">
+          <h2>👥 Invite Friends</h2>
+          <p class="section-subtitle">Get 10% from friends + 2.5% from their referrals</p>
+        </div>
+
+        <div class="referral-card">
+          <div class="referral-header">
+            <span class="referral-label">Your Referral Link</span>
+          </div>
+          <div class="referral-link-box">
+            <div id="referralLink" class="referral-link"></div>
+          </div>
+          <div class="referral-actions">
+            <button class="btn-primary" onclick="copyReferral()">
+              <span>📋</span> Copy Link
+            </button>
+            <button class="btn-secondary" onclick="shareReferral()">
+              <span>📤</span> Share
+            </button>
+          </div>
+        </div>
+
+        <div class="friends-card">
+          <div class="friends-header">
+            <h3>Your Friends</h3>
+            <span id="friendsCount" class="friends-count">0</span>
+          </div>
+          <div id="friendsContainer" class="friends-list">
+            <div class="empty-state">
+              <div class="empty-icon">👥</div>
+              <div class="empty-text">No friends invited yet</div>
+              <div class="empty-subtext">Share your link to get started!</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-section="home">
+        <span class="nav-icon">🎁</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-item" data-section="mine">
+        <span class="nav-icon">⛏️</span>
+        <span class="nav-label">Mine</span>
+      </button>
+      <button class="nav-item" data-section="earn">
+        <span class="nav-icon">💰</span>
+        <span class="nav-label">Earn</span>
+      </button>
+      <button class="nav-item" data-section="friends">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Friends</span>
+      </button>
+    </nav>
   </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
 
   <script src="script.js"></script>
 </body>
 </html>
-
-
-
