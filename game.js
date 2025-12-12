@@ -1,9 +1,10 @@
 // ==================== QUEEN SHEBA RUNNER GAME ====================
 
 class QueenShebaGame {
-  constructor(canvas) {
+  constructor(canvas, playerLevel) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
+    this.playerLevel = playerLevel || 1;
     
     // Set canvas size
     this.resize();
@@ -14,9 +15,10 @@ class QueenShebaGame {
     this.isGameOver = false;
     this.score = 0;
     this.coinsCollected = 0;
-    this.speed = 5;
+    this.baseSpeed = 6 + (this.playerLevel * 0.5); // Speed increases with level
+    this.speed = this.baseSpeed;
     this.gravity = 0.6;
-    this.jumpForce = -12;
+    this.jumpForce = -13; // Slightly faster jump
     
     // Queen Sheba (player)
     this.queen = {
@@ -33,15 +35,15 @@ class QueenShebaGame {
     this.groundY = this.canvas.height - 50;
     this.queen.y = this.groundY - this.queen.height;
     
-    // Obstacles
+    // Obstacles - Different types based on level
     this.obstacles = [];
     this.obstacleTimer = 0;
-    this.obstacleInterval = 100;
+    this.obstacleInterval = Math.max(80 - (this.playerLevel * 5), 50); // Faster spawning at higher levels
     
     // Coins
     this.coins = [];
     this.coinTimer = 0;
-    this.coinInterval = 60;
+    this.coinInterval = 50;
     
     // Clouds
     this.clouds = [];
@@ -114,7 +116,7 @@ class QueenShebaGame {
     this.isGameOver = false;
     this.score = 0;
     this.coinsCollected = 0;
-    this.speed = 5;
+    this.speed = this.baseSpeed;
     this.obstacles = [];
     this.coins = [];
     this.queen.y = this.groundY - this.queen.height;
@@ -132,15 +134,79 @@ class QueenShebaGame {
     }
   }
   
+  getObstacleType() {
+    // Level 1: Only rocks
+    // Level 2+: Rocks and cacti
+    // Level 3+: Rocks, cacti, and webs
+    // Level 4+: All three plus birds
+    
+    if (this.playerLevel === 1) {
+      return 'rock';
+    } else if (this.playerLevel === 2) {
+      return Math.random() < 0.5 ? 'rock' : 'cactus';
+    } else if (this.playerLevel === 3) {
+      const rand = Math.random();
+      if (rand < 0.33) return 'rock';
+      else if (rand < 0.66) return 'cactus';
+      else return 'web';
+    } else {
+      const rand = Math.random();
+      if (rand < 0.25) return 'rock';
+      else if (rand < 0.5) return 'cactus';
+      else if (rand < 0.75) return 'web';
+      else return 'bird';
+    }
+  }
+  
+  createObstacle(type) {
+    const obstacles = {
+      rock: {
+        type: 'rock',
+        x: this.canvas.width,
+        y: this.groundY - 30,
+        width: 30,
+        height: 30,
+        color: '#8B4513'
+      },
+      cactus: {
+        type: 'cactus',
+        x: this.canvas.width,
+        y: this.groundY - 40,
+        width: 25,
+        height: 40,
+        color: '#228B22'
+      },
+      web: {
+        type: 'web',
+        x: this.canvas.width,
+        y: this.groundY - 80,
+        width: 40,
+        height: 40,
+        color: '#C0C0C0'
+      },
+      bird: {
+        type: 'bird',
+        x: this.canvas.width,
+        y: this.groundY - 100,
+        width: 35,
+        height: 25,
+        color: '#000000',
+        wingFlap: 0
+      }
+    };
+    
+    return obstacles[type];
+  }
+  
   update() {
     if (!this.isRunning) return;
     
     // Update score
     this.score++;
     
-    // Increase difficulty
+    // Increase difficulty gradually
     if (this.score % 500 === 0) {
-      this.speed += 0.5;
+      this.speed += 0.3;
     }
     
     // Update Queen Sheba
@@ -167,18 +233,18 @@ class QueenShebaGame {
     this.obstacleTimer++;
     if (this.obstacleTimer > this.obstacleInterval) {
       this.obstacleTimer = 0;
-      this.obstacles.push({
-        x: this.canvas.width,
-        y: this.groundY - 30,
-        width: 30,
-        height: 30,
-        color: '#8B4513'
-      });
+      const obstacleType = this.getObstacleType();
+      this.obstacles.push(this.createObstacle(obstacleType));
     }
     
     // Update obstacles
     this.obstacles.forEach((obstacle, index) => {
       obstacle.x -= this.speed;
+      
+      // Animate bird wings
+      if (obstacle.type === 'bird') {
+        obstacle.wingFlap = (obstacle.wingFlap + 0.2) % (Math.PI * 2);
+      }
       
       // Remove off-screen obstacles
       if (obstacle.x + obstacle.width < 0) {
@@ -201,7 +267,8 @@ class QueenShebaGame {
         y: this.groundY - 80 - Math.random() * 60,
         width: 25,
         height: 25,
-        collected: false
+        collected: false,
+        rotation: 0
       });
     }
     
@@ -209,6 +276,7 @@ class QueenShebaGame {
     this.coins.forEach((coin, index) => {
       if (!coin.collected) {
         coin.x -= this.speed;
+        coin.rotation += 0.1;
         
         // Remove off-screen coins
         if (coin.x + coin.width < 0) {
@@ -231,10 +299,10 @@ class QueenShebaGame {
   }
   
   checkCollision(rect1, rect2) {
-    return rect1.x < rect2.x + rect2.width &&
-           rect1.x + rect1.width > rect2.x &&
-           rect1.y < rect2.y + rect2.height &&
-           rect1.y + rect1.height > rect2.y;
+    return rect1.x < rect2.x + rect2.width - 5 &&
+           rect1.x + rect1.width - 5 > rect2.x &&
+           rect1.y < rect2.y + rect2.height - 5 &&
+           rect1.y + rect1.height - 5 > rect2.y;
   }
   
   draw() {
@@ -268,28 +336,21 @@ class QueenShebaGame {
       this.ctx.fillRect(i, this.groundY, 10, 5);
     }
     
-    // Draw Queen Sheba (simplified crown figure)
+    // Draw Queen Sheba
     this.drawQueen();
     
-    // Draw obstacles (rocks)
+    // Draw obstacles based on type
     this.obstacles.forEach(obstacle => {
-      this.ctx.fillStyle = obstacle.color;
-      this.ctx.beginPath();
-      this.ctx.moveTo(obstacle.x + obstacle.width / 2, obstacle.y);
-      this.ctx.lineTo(obstacle.x + obstacle.width, obstacle.y + obstacle.height);
-      this.ctx.lineTo(obstacle.x, obstacle.y + obstacle.height);
-      this.ctx.closePath();
-      this.ctx.fill();
-      
-      // Rock texture
-      this.ctx.fillStyle = '#654321';
-      this.ctx.fillRect(obstacle.x + 8, obstacle.y + 15, 4, 4);
-      this.ctx.fillRect(obstacle.x + 18, obstacle.y + 20, 3, 3);
+      this.drawObstacle(obstacle);
     });
     
     // Draw coins
     this.coins.forEach(coin => {
       if (!coin.collected) {
+        this.ctx.save();
+        this.ctx.translate(coin.x + coin.width / 2, coin.y + coin.height / 2);
+        this.ctx.rotate(coin.rotation);
+        
         // Coin glow
         this.ctx.shadowColor = '#FFD700';
         this.ctx.shadowBlur = 10;
@@ -297,18 +358,83 @@ class QueenShebaGame {
         // Coin body
         this.ctx.fillStyle = '#FFD700';
         this.ctx.beginPath();
-        this.ctx.arc(coin.x + coin.width / 2, coin.y + coin.height / 2, coin.width / 2, 0, Math.PI * 2);
+        this.ctx.arc(0, 0, coin.width / 2, 0, Math.PI * 2);
         this.ctx.fill();
         
         // Coin inner circle
         this.ctx.fillStyle = '#FFA500';
         this.ctx.beginPath();
-        this.ctx.arc(coin.x + coin.width / 2, coin.y + coin.height / 2, coin.width / 3, 0, Math.PI * 2);
+        this.ctx.arc(0, 0, coin.width / 3, 0, Math.PI * 2);
         this.ctx.fill();
         
         this.ctx.shadowBlur = 0;
+        this.ctx.restore();
       }
     });
+  }
+  
+  drawObstacle(obstacle) {
+    switch (obstacle.type) {
+      case 'rock':
+        this.ctx.fillStyle = obstacle.color;
+        this.ctx.beginPath();
+        this.ctx.moveTo(obstacle.x + obstacle.width / 2, obstacle.y);
+        this.ctx.lineTo(obstacle.x + obstacle.width, obstacle.y + obstacle.height);
+        this.ctx.lineTo(obstacle.x, obstacle.y + obstacle.height);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.fillStyle = '#654321';
+        this.ctx.fillRect(obstacle.x + 8, obstacle.y + 15, 4, 4);
+        break;
+        
+      case 'cactus':
+        this.ctx.fillStyle = obstacle.color;
+        this.ctx.fillRect(obstacle.x + 8, obstacle.y, 10, obstacle.height);
+        this.ctx.fillRect(obstacle.x, obstacle.y + 10, 8, 15);
+        this.ctx.fillRect(obstacle.x + 18, obstacle.y + 10, 8, 15);
+        break;
+        
+      case 'web':
+        this.ctx.strokeStyle = obstacle.color;
+        this.ctx.lineWidth = 2;
+        // Draw spider web pattern
+        for (let i = 0; i < 4; i++) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2);
+          const angle = (i * Math.PI) / 2;
+          this.ctx.lineTo(
+            obstacle.x + obstacle.width / 2 + Math.cos(angle) * obstacle.width / 2,
+            obstacle.y + obstacle.height / 2 + Math.sin(angle) * obstacle.height / 2
+          );
+          this.ctx.stroke();
+        }
+        // Spider in center
+        this.ctx.fillStyle = '#000';
+        this.ctx.beginPath();
+        this.ctx.arc(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2, 5, 0, Math.PI * 2);
+        this.ctx.fill();
+        break;
+        
+      case 'bird':
+        this.ctx.fillStyle = obstacle.color;
+        this.ctx.beginPath();
+        // Body
+        this.ctx.ellipse(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2, 
+                        obstacle.width / 3, obstacle.height / 3, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        // Wings
+        const wingOffset = Math.sin(obstacle.wingFlap) * 5;
+        this.ctx.beginPath();
+        this.ctx.moveTo(obstacle.x, obstacle.y + obstacle.height / 2);
+        this.ctx.quadraticCurveTo(obstacle.x - 5, obstacle.y + wingOffset, obstacle.x + 5, obstacle.y + 10);
+        this.ctx.fill();
+        this.ctx.beginPath();
+        this.ctx.moveTo(obstacle.x + obstacle.width, obstacle.y + obstacle.height / 2);
+        this.ctx.quadraticCurveTo(obstacle.x + obstacle.width + 5, obstacle.y + wingOffset, 
+                                  obstacle.x + obstacle.width - 5, obstacle.y + 10);
+        this.ctx.fill();
+        break;
+    }
   }
   
   drawQueen() {
@@ -357,14 +483,13 @@ class QueenShebaGame {
     this.ctx.arc(q.x + q.width / 2, q.y - 3, 2, 0, Math.PI * 2);
     this.ctx.fill();
     
-    // Arms (simplified)
+    // Arms
     this.ctx.strokeStyle = '#FFE4B5';
     this.ctx.lineWidth = 4;
     this.ctx.beginPath();
     this.ctx.moveTo(q.x + 5, q.y + 20);
     this.ctx.lineTo(q.x - 3, q.y + 28);
     this.ctx.stroke();
-    
     this.ctx.beginPath();
     this.ctx.moveTo(q.x + q.width - 5, q.y + 20);
     this.ctx.lineTo(q.x + q.width + 3, q.y + 28);
