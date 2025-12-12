@@ -47,14 +47,12 @@ let gameState = {
 const coinsEl = document.getElementById("coins");
 const coinsDisplayEl = document.getElementById("coinsDisplay");
 const levelEl = document.getElementById("level");
-const tapArea = document.getElementById("tapArea");
 const energyText = document.getElementById("energyText");
 const energyFill = document.getElementById("energyFill");
 const referralLinkEl = document.getElementById("referralLink");
 const upgradesEl = document.getElementById("upgrades");
 const friendsContainer = document.getElementById("friendsContainer");
 const friendsCountEl = document.getElementById("friendsCount");
-const clickAnimationsEl = document.getElementById("clickAnimations");
 const toastEl = document.getElementById("toast");
 
 // ==================== TELEGRAM WEB APP ====================
@@ -160,6 +158,92 @@ async function fetchReferrals() {
 }
 
 // ==================== GAME FUNCTIONS ====================
+let queenShebaGame = null;
+let currentGameScore = 0;
+
+function initGame() {
+  const canvas = document.getElementById('gameCanvas');
+  const overlay = document.getElementById('gameOverlay');
+  const startBtn = document.getElementById('startBtn');
+  const scoreDisplay = document.getElementById('gameScore');
+  
+  // Load game script first
+  const gameScript = document.createElement('script');
+  gameScript.src = 'game.js';
+  gameScript.onload = () => {
+    queenShebaGame = new window.QueenShebaGame(canvas);
+    
+    queenShebaGame.onGameOver = function() {
+      overlay.classList.remove('hidden');
+      
+      // Calculate rewards
+      const coinsEarned = this.coinsCollected * gameState.coinsPerTap;
+      const distanceBonus = Math.floor(this.score / 100);
+      const totalReward = coinsEarned + distanceBonus;
+      
+      gameState.coins += totalReward;
+      updateCoins();
+      
+      showToast(`🎮 Game Over! Earned ${totalReward} gifts!`);
+      
+      document.querySelector('.game-instructions h3').textContent = '🎮 Game Over!';
+      document.querySelector('.game-instructions').innerHTML = `
+        <h3>🎮 Game Over!</h3>
+        <p><strong>Distance:</strong> ${this.score}</p>
+        <p><strong>Coins Collected:</strong> ${this.coinsCollected}</p>
+        <p><strong>Total Earned:</strong> ${totalReward} Gifts</p>
+        <button class="start-game-btn" id="startBtn">Play Again</button>
+      `;
+      
+      document.getElementById('startBtn').onclick = startGame;
+      
+      // Haptic feedback
+      if (tg && tg.HapticFeedback) {
+        tg.HapticFeedback.notificationOccurred('error');
+      }
+    };
+  };
+  document.head.appendChild(gameScript);
+  
+  startBtn.onclick = startGame;
+}
+
+function startGame() {
+  if (gameState.energy < 1) {
+    showToast('⚠️ Not enough energy! Wait for recharge.');
+    return;
+  }
+  
+  // Consume energy
+  gameState.energy -= 1;
+  updateEnergy();
+  
+  // Hide overlay and start game
+  const overlay = document.getElementById('gameOverlay');
+  overlay.classList.add('hidden');
+  
+  // Reset instructions for next game over
+  document.querySelector('.game-instructions h3').textContent = '🎮 How to Play';
+  document.querySelector('.game-instructions').innerHTML = `
+    <h3>🎮 How to Play</h3>
+    <p><strong>Tap / Space</strong> to make Queen Sheba jump</p>
+    <p><strong>Collect coins</strong> to earn gifts</p>
+    <p><strong>Avoid obstacles</strong> to keep playing</p>
+    <button class="start-game-btn" id="startBtn">Start Game</button>
+  `;
+  
+  queenShebaGame.start();
+  
+  // Update score display
+  const updateScore = setInterval(() => {
+    if (queenShebaGame && queenShebaGame.isRunning) {
+      document.getElementById('gameScore').textContent = `Score: ${queenShebaGame.score}`;
+    } else {
+      clearInterval(updateScore);
+    }
+  }, 100);
+}
+
 function updateCoins() {
   gameState.coins = Math.max(0, Math.floor(gameState.coins));
   coinsEl.textContent = gameState.coins.toLocaleString();
@@ -182,42 +266,6 @@ function updateEnergy() {
   energyText.textContent = `${gameState.energy}/${gameState.maxEnergy}`;
   const percentage = (gameState.energy / gameState.maxEnergy) * 100;
   energyFill.style.width = `${percentage}%`;
-}
-
-function handleTap(event) {
-  if (gameState.energy >= gameState.coinsPerTap) {
-    gameState.coins += gameState.coinsPerTap;
-    gameState.energy -= gameState.coinsPerTap;
-    
-    updateCoins();
-    updateEnergy();
-    
-    // Create floating animation
-    createCoinAnimation(event, gameState.coinsPerTap);
-    
-    // Haptic feedback
-    if (tg && tg.HapticFeedback) {
-      tg.HapticFeedback.impactOccurred('light');
-    }
-  }
-}
-
-function createCoinAnimation(event, amount) {
-  const rect = tapArea.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-  
-  const coinEl = document.createElement("div");
-  coinEl.className = "coin-animation";
-  coinEl.textContent = `+${amount}`;
-  coinEl.style.left = `${x}px`;
-  coinEl.style.top = `${y}px`;
-  
-  clickAnimationsEl.appendChild(coinEl);
-  
-  setTimeout(() => {
-    coinEl.remove();
-  }, 1000);
 }
 
 // ==================== UPGRADES ====================
@@ -584,7 +632,7 @@ async function init() {
   
   if (!loaded && !serverData) {
     gameState.energy = gameState.maxEnergy;
-    showToast(`👋 Welcome ${userName}! Start tapping to earn gifts!`);
+    showToast(`👋 Welcome ${userName}! Play the game to earn gifts!`);
   }
   
   updateCoins();
@@ -593,14 +641,7 @@ async function init() {
   renderFriends();
   setupNavigation();
   startEnergyRegen();
-  
-  // Event listeners
-  tapArea.addEventListener("click", handleTap);
-  
-  // Prevent context menu on long press
-  tapArea.addEventListener("contextmenu", (e) => {
-    e.preventDefault();
-  });
+  initGame(); // Initialize the game
   
   // Save game state periodically
   setInterval(saveGameState, 30000); // Every 30 seconds
@@ -619,6 +660,10 @@ async function init() {
     if (document.hidden) {
       saveGameState();
       syncGameState();
+      // Pause game if running
+      if (queenShebaGame && queenShebaGame.isRunning) {
+        queenShebaGame.stop();
+      }
     } else {
       // Reload referrals when app becomes visible
       loadReferrals();
