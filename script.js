@@ -545,28 +545,30 @@ function loadGameState() {
 
 // ==================== PHONE REGISTRATION ====================
 async function checkPhoneRegistration() {
-  const phoneRegistered = localStorage.getItem(`phoneVerified_${userId}`);
-  
-  if (phoneRegistered === 'true') {
-    return; // Already verified
-  }
-  
-  // Check server
   try {
-    const response = await fetch(`${API_BASE_URL}/api/user/${userId}`);
+    // Check if this Telegram user exists in database
+    const response = await fetch(`${API_BASE_URL}/api/user/${userId}/check_registered`);
+    
     if (response.ok) {
       const data = await response.json();
-      if (data.phone_verified) {
-        localStorage.setItem(`phoneVerified_${userId}`, 'true');
-        return;
+      
+      if (data.registered && data.verified) {
+        // User exists and verified - load their data
+        console.log("✅ User registered and verified");
+        return; // Continue to game
+      } else {
+        // Not registered - show registration modal
+        console.log("📱 New user - show registration");
+        showPhoneModal();
       }
+    } else {
+      // User doesn't exist - show registration
+      showPhoneModal();
     }
   } catch (error) {
-    console.error('Error checking phone:', error);
+    console.error('Error checking registration:', error);
+    showPhoneModal();
   }
-  
-  // Show verification modal
-  showPhoneModal();
 }
 
 function showPhoneModal() {
@@ -576,7 +578,6 @@ function showPhoneModal() {
   
   // Auto-fill phone if detected from Telegram
   if (userPhone) {
-    // Clean phone number (remove +251 or spaces)
     let cleanPhone = userPhone.replace(/\s/g, '').replace('+251', '0');
     if (!cleanPhone.startsWith('09')) {
       cleanPhone = '09' + cleanPhone.slice(-8);
@@ -584,13 +585,15 @@ function showPhoneModal() {
     
     phoneInput.value = cleanPhone;
     phoneInput.readOnly = true;
+    document.getElementById('phoneHelp').textContent = '✅ Phone detected from Telegram';
     
-    // Auto-send verification code immediately
+    // Auto-send after short delay
     setTimeout(() => {
       sendVerificationCode();
-    }, 500);
+    }, 800);
   } else {
     phoneInput.readOnly = false;
+    document.getElementById('phoneHelp').textContent = 'Enter your Ethiopian phone number (09XXXXXXXX)';
   }
   
   modal.classList.remove('hidden');
@@ -601,11 +604,33 @@ function hidePhoneModal() {
   modal.classList.add('hidden');
 }
 
+function generateVerificationCode(phone) {
+  // Get last 3 digits
+  const last3 = phone.slice(-3);
+  
+  // Convert to array of numbers
+  const digits = last3.split('').map(d => parseInt(d));
+  
+  // Apply formula: multiply by 2, then add 2 to each digit
+  const code = digits.map(d => {
+    let result = (d * 2) + 2;
+    // If result is two digits, take last digit
+    if (result >= 10) {
+      result = result % 10;
+    }
+    return result;
+  }).join('');
+  
+  // Make it 4 digits by adding first digit again
+  return code + code.charAt(0);
+}
+
 async function sendVerificationCode() {
   const phoneInput = document.getElementById('phoneInput');
   const phone = phoneInput.value.trim();
   const sendBtn = document.getElementById('sendVerifyBtn');
   const codeInput = document.getElementById('codeInput');
+  const codeGroup = document.getElementById('codeGroup');
   
   // Validate format
   if (!/^09[0-9]{8}$/.test(phone)) {
@@ -613,36 +638,41 @@ async function sendVerificationCode() {
     return;
   }
   
-  // Generate code from last 3 digits of phone
-  verificationCode = phone.slice(-3);
+  // Generate verification code using formula
+  verificationCode = generateVerificationCode(phone);
+  
+  console.log('📱 Phone:', phone);
+  console.log('🔐 Verification code:', verificationCode);
   
   try {
-    // Send SMS via Telegram
-    const response = await fetch(`${API_BASE_URL}/api/user/${userId}/send_sms_code`, {
+    // Send code via Telegram
+    const response = await fetch(`${API_BASE_URL}/api/user/${userId}/send_verification_code`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         phone_number: phone,
         code: verificationCode,
-        user_id: userId
+        user_id: userId,
+        username: userName
       })
     });
     
     if (response.ok) {
-      // Change UI for verification
+      // Update UI
       phoneInput.disabled = true;
-      sendBtn.textContent = 'Verify';
-      sendBtn.onclick = verifyCode;
+      codeGroup.style.display = 'block';
       codeInput.disabled = false;
       codeInput.focus();
+      sendBtn.textContent = 'Verify Code';
+      sendBtn.onclick = verifyCode;
       
-      showToast(`📱 SMS sent to ${phone}! Check your messages.`);
+      showToast(`📱 Code sent to your Telegram! Check your messages.`);
     } else {
       showToast('❌ Failed to send code. Try again.');
     }
   } catch (error) {
-    console.error('SMS send error:', error);
-    showToast('❌ Connection error.');
+    console.error('Send code error:', error);
+    showToast('❌ Connection error. Try again.');
   }
 }
 
@@ -653,20 +683,22 @@ async function verifyCode() {
   const phone = phoneInput.value.trim();
   
   if (enteredCode !== verificationCode) {
-    showToast('❌ Invalid code! Check your SMS.');
+    showToast('❌ Invalid code! Check your Telegram message.');
     codeInput.value = '';
+    codeInput.focus();
     return;
   }
   
   // Code correct - save to database
   try {
-    const response = await fetch(`${API_BASE_URL}/api/user/${userId}/update_contact`, {
+    const response = await fetch(`${API_BASE_URL}/api/user/${userId}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         phone_number: phone,
         username: userName,
-        verified: true
+        verified: true,
+        telegram_id: userId
       })
     });
     
@@ -679,10 +711,10 @@ async function verifyCode() {
         tg.HapticFeedback.notificationOccurred('success');
       }
     } else {
-      showToast('❌ Failed to save. Try again.');
+      showToast('❌ Failed to register. Try again.');
     }
   } catch (error) {
-    console.error('Verification error:', error);
+    console.error('Registration error:', error);
     showToast('❌ Connection error.');
   }
 }
@@ -691,6 +723,55 @@ function setupPhoneRegistration() {
   const sendBtn = document.getElementById('sendVerifyBtn');
   sendBtn.onclick = sendVerificationCode;
 }
+
+// ==================== SIGN OUT ====================
+function showSignOutModal() {
+  const modal = document.getElementById('signOutModal');
+  document.getElementById('deleteCoins').textContent = gameState.coins.toLocaleString();
+  document.getElementById('deleteLevel').textContent = gameState.level;
+  modal.style.display = 'flex';
+  
+  if (tg && tg.HapticFeedback) {
+    tg.HapticFeedback.notificationOccurred('warning');
+  }
+}
+
+function cancelSignOut() {
+  const modal = document.getElementById('signOutModal');
+  modal.style.display = 'none';
+}
+
+async function confirmSignOut() {
+  try {
+    // Delete user from database
+    const response = await fetch(`${API_BASE_URL}/api/user/${userId}/delete`, {
+      method: 'DELETE'
+    });
+    
+    if (response.ok) {
+      // Clear all local storage
+      localStorage.clear();
+      
+      // Show confirmation
+      showToast('🗑️ Account deleted. All data removed permanently.');
+      
+      // Reload page after 2 seconds
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } else {
+      showToast('❌ Failed to delete account.');
+    }
+  } catch (error) {
+    console.error('Delete error:', error);
+    showToast('❌ Connection error.');
+  }
+}
+
+// Make functions global
+window.showSignOutModal = showSignOutModal;
+window.cancelSignOut = cancelSignOut;
+window.confirmSignOut = confirmSignOut;
 
 // ==================== PREVENT ZOOM & SCROLL ====================
 function preventZoom() {
