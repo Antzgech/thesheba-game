@@ -1,5 +1,5 @@
 // ==================== CONFIGURATION ====================
-const API_BASE_URL = "YOUR_API_URL_HERE"; // Replace with your backend API URL
+const API_BASE_URL = "http://localhost:5000"; // Change for production
 
 // ==================== GAME STATE ====================
 let gameState = {
@@ -11,33 +11,9 @@ let gameState = {
   energyRegenRate: 1,
   friends: [],
   upgrades: [
-    { 
-      id: 1, 
-      name: "Multitap", 
-      level: 1, 
-      cost: 20, 
-      icon: "👆",
-      benefit: "+1 per tap", 
-      type: "tap" 
-    },
-    { 
-      id: 2, 
-      name: "Energy Limit", 
-      level: 1, 
-      cost: 20, 
-      icon: "⚡",
-      benefit: "+5 energy", 
-      type: "energy" 
-    },
-    { 
-      id: 3, 
-      name: "Recharging Speed", 
-      level: 1, 
-      cost: 50, 
-      icon: "🔋",
-      benefit: "+1 regen/sec", 
-      type: "regen" 
-    }
+    { id: 1, name: "Multitap", level: 1, cost: 20, icon: "👆", benefit: "+1 per tap", type: "tap" },
+    { id: 2, name: "Energy Limit", level: 1, cost: 20, icon: "⚡", benefit: "+5 energy", type: "energy" },
+    { id: 3, name: "Recharging Speed", level: 1, cost: 50, icon: "🔋", benefit: "+1 regen/sec", type: "regen" }
   ],
   lastDailyReward: null,
   needsSync: false
@@ -69,41 +45,33 @@ function initTelegramWebApp() {
     tg.ready();
     tg.expand();
     
-    // Enable full screen mode
     tg.setHeaderColor('#0f0c29');
     tg.setBackgroundColor('#0f0c29');
-    
-    // Disable vertical swipes
     tg.disableVerticalSwipes();
     
-    // Set theme
     if (tg.themeParams && tg.themeParams.bg_color) {
       document.body.style.backgroundColor = tg.themeParams.bg_color;
     }
     
-    // Get user data
     if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
       userId = tg.initDataUnsafe.user.id;
       userName = tg.initDataUnsafe.user.first_name || "Player";
       
-      // Try to get phone number from Telegram
+      // Get phone from Telegram
       if (tg.initDataUnsafe.user.phone_number) {
         userPhone = tg.initDataUnsafe.user.phone_number;
+        console.log("📱 Phone detected from Telegram:", userPhone);
       }
     }
     
     console.log("Telegram WebApp initialized");
-    console.log("User ID:", userId);
-    console.log("Phone from Telegram:", userPhone);
   }
   
-  // Fallback for testing outside Telegram
   if (!userId) {
     userId = "demo_" + Math.floor(Math.random() * 1000000);
-    console.warn("Running in demo mode (outside Telegram)");
+    console.warn("Running in demo mode");
   }
   
-  // Set referral link with correct bot username
   referralLink = `https://t.me/TheSheba_bot?start=ref_${userId}`;
   referralLinkEl.textContent = referralLink;
 }
@@ -113,8 +81,7 @@ async function fetchUserData() {
   try {
     const response = await fetch(`${API_BASE_URL}/api/user/${userId}`);
     if (response.ok) {
-      const data = await response.json();
-      return data;
+      return await response.json();
     }
   } catch (error) {
     console.error("Failed to fetch user data:", error);
@@ -128,9 +95,7 @@ async function syncGameState() {
   try {
     const response = await fetch(`${API_BASE_URL}/api/user/${userId}/sync`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         coins: gameState.coins,
         level: gameState.level,
@@ -145,10 +110,10 @@ async function syncGameState() {
     
     if (response.ok) {
       gameState.needsSync = false;
-      console.log("Game state synced with server");
+      console.log("Game state synced");
     }
   } catch (error) {
-    console.error("Failed to sync game state:", error);
+    console.error("Failed to sync:", error);
   }
 }
 
@@ -167,15 +132,12 @@ async function fetchReferrals() {
 
 // ==================== GAME FUNCTIONS ====================
 let queenShebaGame = null;
-let currentGameScore = 0;
 
 function initGame() {
   const canvas = document.getElementById('gameCanvas');
   const overlay = document.getElementById('gameOverlay');
   const startBtn = document.getElementById('startBtn');
-  const scoreDisplay = document.getElementById('gameScore');
   
-  // Load game script first
   const gameScript = document.createElement('script');
   gameScript.src = 'game.js';
   gameScript.onload = () => {
@@ -184,7 +146,6 @@ function initGame() {
     queenShebaGame.onGameOver = function() {
       overlay.classList.remove('hidden');
       
-      // Calculate rewards
       const coinsEarned = this.coinsCollected * gameState.coinsPerTap;
       const distanceBonus = Math.floor(this.score / 100);
       const totalReward = coinsEarned + distanceBonus;
@@ -192,20 +153,19 @@ function initGame() {
       gameState.coins += totalReward;
       updateCoins();
       
-      showToast(`🎮 Game Over! Earned ${totalReward} gifts!`);
+      showToast(`🎮 Journey ended! Earned ${totalReward} gifts!`);
       
-      document.querySelector('.game-instructions h3').textContent = '🎮 Game Over!';
+      document.querySelector('.game-instructions h3').textContent = '🎮 Journey Complete!';
       document.querySelector('.game-instructions').innerHTML = `
-        <h3>🎮 Game Over!</h3>
-        <p><strong>Distance:</strong> ${this.score}</p>
-        <p><strong>Coins Collected:</strong> ${this.coinsCollected}</p>
+        <h3>🎮 Journey Complete!</h3>
+        <p><strong>Distance Traveled:</strong> ${this.score}</p>
+        <p><strong>Gifts Collected:</strong> ${this.coinsCollected}</p>
         <p><strong>Total Earned:</strong> ${totalReward} Gifts</p>
-        <button class="start-game-btn" id="startBtn">Play Again</button>
+        <button class="start-game-btn" id="startBtn">Continue Journey</button>
       `;
       
       document.getElementById('startBtn').onclick = startGame;
       
-      // Haptic feedback
       if (tg && tg.HapticFeedback) {
         tg.HapticFeedback.notificationOccurred('error');
       }
@@ -222,30 +182,25 @@ function startGame() {
     return;
   }
   
-  // Consume energy
   gameState.energy -= 1;
   updateEnergy();
   
-  // Hide overlay and start game
   const overlay = document.getElementById('gameOverlay');
   overlay.classList.add('hidden');
   
-  // Reset instructions for next game over
-  document.querySelector('.game-instructions h3').textContent = '🎮 How to Play';
   document.querySelector('.game-instructions').innerHTML = `
-    <h3>🎮 How to Play</h3>
-    <p><strong>Tap / Space</strong> to make Queen Sheba jump</p>
-    <p><strong>Collect coins</strong> to earn gifts</p>
-    <p><strong>Avoid obstacles</strong> to keep playing</p>
-    <button class="start-game-btn" id="startBtn">Start Game</button>
+    <h3>👑 The Quest Begins</h3>
+    <p>Queen Sheba must journey to Jerusalem to meet the wise King Solomon</p>
+    <p><strong>Tap/Space</strong> to jump over obstacles</p>
+    <p><strong>Collect gifts</strong> to present to the King</p>
+    <button class="start-game-btn" id="startBtn">Begin Journey</button>
   `;
   
   queenShebaGame.start();
   
-  // Update score display
   const updateScore = setInterval(() => {
     if (queenShebaGame && queenShebaGame.isRunning) {
-      document.getElementById('gameScore').textContent = `Score: ${queenShebaGame.score}`;
+      document.getElementById('gameScore').textContent = `Distance: ${queenShebaGame.score}`;
     } else {
       clearInterval(updateScore);
     }
@@ -257,11 +212,15 @@ function updateCoins() {
   coinsEl.textContent = gameState.coins.toLocaleString();
   coinsDisplayEl.textContent = gameState.coins.toLocaleString();
   
-  // Update level
   const newLevel = Math.floor(gameState.coins / 100) + 1;
   if (newLevel !== gameState.level) {
     gameState.level = newLevel;
     showToast(`🎉 Level Up! You are now Level ${gameState.level}!`);
+    
+    // Recreate game with new level
+    if (queenShebaGame) {
+      queenShebaGame.playerLevel = gameState.level;
+    }
   }
   levelEl.textContent = gameState.level;
   
@@ -275,7 +234,6 @@ function updateEnergy() {
   const percentage = (gameState.energy / gameState.maxEnergy) * 100;
   energyFill.style.width = `${percentage}%`;
   
-  // Update energy regen display
   const regenDisplay = document.querySelector('.energy-regen');
   if (regenDisplay) {
     regenDisplay.textContent = `+${gameState.energyRegenRate}/sec`;
@@ -316,13 +274,10 @@ function renderUpgrades() {
 function buyUpgrade(upgradeId) {
   const upgrade = gameState.upgrades.find(u => u.id === upgradeId);
   
-  if (!upgrade || gameState.coins < upgrade.cost) {
-    return;
-  }
+  if (!upgrade || gameState.coins < upgrade.cost) return;
   
   gameState.coins -= upgrade.cost;
   
-  // Apply upgrade effect
   if (upgrade.type === "tap") {
     gameState.coinsPerTap += 1;
   } else if (upgrade.type === "energy") {
@@ -332,7 +287,6 @@ function buyUpgrade(upgradeId) {
     gameState.energyRegenRate += 1;
   }
   
-  // Upgrade progression
   upgrade.level += 1;
   upgrade.cost = Math.floor(upgrade.cost * 2);
   
@@ -340,7 +294,6 @@ function buyUpgrade(upgradeId) {
   updateEnergy();
   showToast(`${upgrade.name} upgraded to level ${upgrade.level}!`);
   
-  // Haptic feedback
   if (tg && tg.HapticFeedback) {
     tg.HapticFeedback.notificationOccurred('success');
   }
@@ -359,7 +312,7 @@ function claimDailyReward() {
   gameState.lastDailyReward = today;
   
   updateCoins();
-  showToast("✅ Daily reward claimed: +50 Gifts!");
+  showToast("✅ Daily blessing claimed: +50 Gifts!");
   
   if (tg && tg.HapticFeedback) {
     tg.HapticFeedback.notificationOccurred('success');
@@ -371,7 +324,6 @@ function joinChannelReward() {
   updateCoins();
   showToast("✅ Reward claimed: +100 Gifts!");
   
-  // Open Telegram channel
   if (tg && tg.openTelegramLink) {
     tg.openTelegramLink("https://t.me/TheShebaBot");
   } else {
@@ -384,7 +336,6 @@ function subscribeChannelReward() {
   updateCoins();
   showToast("✅ Reward claimed: +200 Gifts!");
   
-  // Open YouTube channel
   if (tg && tg.openLink) {
     tg.openLink("https://www.youtube.com/@SabawianProduction");
   } else {
@@ -396,7 +347,7 @@ function subscribeChannelReward() {
 function copyReferral() {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(referralLink).then(() => {
-      showToast("📋 Referral link copied to clipboard!");
+      showToast("📋 Invitation link copied!");
     }).catch(() => {
       fallbackCopyReferral();
     });
@@ -419,16 +370,16 @@ function fallbackCopyReferral() {
   
   try {
     document.execCommand('copy');
-    showToast("📋 Referral link copied!");
+    showToast("📋 Link copied!");
   } catch (err) {
-    showToast("❌ Failed to copy link");
+    showToast("❌ Failed to copy");
   }
   
   document.body.removeChild(textArea);
 }
 
 function shareReferral() {
-  const shareText = "Join me in Saba Gift and earn rewards! 🎁";
+  const shareText = "Join Queen Sheba's journey and earn rewards! 👑🎁";
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(shareText)}`;
   
   if (tg && tg.openTelegramLink) {
@@ -453,8 +404,8 @@ function renderFriends() {
     friendsContainer.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">👥</div>
-        <div class="empty-text">No friends invited yet</div>
-        <div class="empty-subtext">Share your link to get started!</div>
+        <div class="empty-text">No companions yet</div>
+        <div class="empty-subtext">Share your link to journey together!</div>
       </div>
     `;
   } else {
@@ -485,27 +436,22 @@ function setupNavigation() {
     navItem.addEventListener("click", () => {
       const targetSection = navItem.dataset.section;
       
-      // Load referrals when switching to friends section
       if (targetSection === 'friends') {
         loadReferrals();
       }
       
-      // Update active nav item
       navItems.forEach(item => item.classList.remove("active"));
       navItem.classList.add("active");
       
-      // Update active section
       sections.forEach(section => {
         if (section.id === `${targetSection}Section`) {
           section.classList.add("active");
-          // Scroll to top of section
           section.scrollTop = 0;
         } else {
           section.classList.remove("active");
         }
       });
       
-      // Haptic feedback
       if (tg && tg.HapticFeedback) {
         tg.HapticFeedback.impactOccurred('light');
       }
@@ -553,7 +499,7 @@ function saveGameState() {
     };
     localStorage.setItem(`sabaGift_${userId}`, JSON.stringify(saveData));
   } catch (error) {
-    console.error("Failed to save game state:", error);
+    console.error("Failed to save:", error);
   }
 }
 
@@ -564,7 +510,6 @@ function loadGameState() {
     if (savedData) {
       const data = JSON.parse(savedData);
       
-      // Restore game state
       gameState.coins = data.coins || 0;
       gameState.maxEnergy = data.maxEnergy || 10;
       gameState.coinsPerTap = data.coinsPerTap || 1;
@@ -574,7 +519,6 @@ function loadGameState() {
       gameState.friends = data.friends || [];
       gameState.lastDailyReward = data.lastDailyReward;
       
-      // Calculate energy regenerated while offline
       if (data.timestamp) {
         const timePassed = Math.floor((Date.now() - data.timestamp) / 1000);
         const energyGained = Math.min(
@@ -593,15 +537,163 @@ function loadGameState() {
       return true;
     }
   } catch (error) {
-    console.error("Failed to load game state:", error);
+    console.error("Failed to load:", error);
   }
   
   return false;
 }
 
+// ==================== PHONE REGISTRATION ====================
+async function checkPhoneRegistration() {
+  const phoneRegistered = localStorage.getItem(`phoneVerified_${userId}`);
+  
+  if (phoneRegistered === 'true') {
+    return; // Already verified
+  }
+  
+  // Check server
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/user/${userId}`);
+    if (response.ok) {
+      const data = await response.json();
+      if (data.phone_verified) {
+        localStorage.setItem(`phoneVerified_${userId}`, 'true');
+        return;
+      }
+    }
+  } catch (error) {
+    console.error('Error checking phone:', error);
+  }
+  
+  // Show verification modal
+  showPhoneModal();
+}
+
+function showPhoneModal() {
+  const modal = document.getElementById('phoneModal');
+  const phoneInput = document.getElementById('phoneInput');
+  const sendBtn = document.getElementById('sendVerifyBtn');
+  
+  // Auto-fill phone if detected from Telegram
+  if (userPhone) {
+    // Clean phone number (remove +251 or spaces)
+    let cleanPhone = userPhone.replace(/\s/g, '').replace('+251', '0');
+    if (!cleanPhone.startsWith('09')) {
+      cleanPhone = '09' + cleanPhone.slice(-8);
+    }
+    
+    phoneInput.value = cleanPhone;
+    phoneInput.readOnly = true;
+    
+    // Auto-send verification code immediately
+    setTimeout(() => {
+      sendVerificationCode();
+    }, 500);
+  } else {
+    phoneInput.readOnly = false;
+  }
+  
+  modal.classList.remove('hidden');
+}
+
+function hidePhoneModal() {
+  const modal = document.getElementById('phoneModal');
+  modal.classList.add('hidden');
+}
+
+async function sendVerificationCode() {
+  const phoneInput = document.getElementById('phoneInput');
+  const phone = phoneInput.value.trim();
+  const sendBtn = document.getElementById('sendVerifyBtn');
+  const codeInput = document.getElementById('codeInput');
+  
+  // Validate format
+  if (!/^09[0-9]{8}$/.test(phone)) {
+    showToast('❌ Invalid phone format! Use: 09XXXXXXXX');
+    return;
+  }
+  
+  // Generate code from last 3 digits of phone
+  verificationCode = phone.slice(-3);
+  
+  try {
+    // Send SMS via Telegram
+    const response = await fetch(`${API_BASE_URL}/api/user/${userId}/send_sms_code`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone_number: phone,
+        code: verificationCode,
+        user_id: userId
+      })
+    });
+    
+    if (response.ok) {
+      // Change UI for verification
+      phoneInput.disabled = true;
+      sendBtn.textContent = 'Verify';
+      sendBtn.onclick = verifyCode;
+      codeInput.disabled = false;
+      codeInput.focus();
+      
+      showToast(`📱 SMS sent to ${phone}! Check your messages.`);
+    } else {
+      showToast('❌ Failed to send code. Try again.');
+    }
+  } catch (error) {
+    console.error('SMS send error:', error);
+    showToast('❌ Connection error.');
+  }
+}
+
+async function verifyCode() {
+  const codeInput = document.getElementById('codeInput');
+  const enteredCode = codeInput.value.trim();
+  const phoneInput = document.getElementById('phoneInput');
+  const phone = phoneInput.value.trim();
+  
+  if (enteredCode !== verificationCode) {
+    showToast('❌ Invalid code! Check your SMS.');
+    codeInput.value = '';
+    return;
+  }
+  
+  // Code correct - save to database
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/user/${userId}/update_contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone_number: phone,
+        username: userName,
+        verified: true
+      })
+    });
+    
+    if (response.ok) {
+      localStorage.setItem(`phoneVerified_${userId}`, 'true');
+      hidePhoneModal();
+      showToast(`✅ Welcome to the quest, ${userName}! 👑`);
+      
+      if (tg && tg.HapticFeedback) {
+        tg.HapticFeedback.notificationOccurred('success');
+      }
+    } else {
+      showToast('❌ Failed to save. Try again.');
+    }
+  } catch (error) {
+    console.error('Verification error:', error);
+    showToast('❌ Connection error.');
+  }
+}
+
+function setupPhoneRegistration() {
+  const sendBtn = document.getElementById('sendVerifyBtn');
+  sendBtn.onclick = sendVerificationCode;
+}
+
 // ==================== PREVENT ZOOM & SCROLL ====================
 function preventZoom() {
-  // Prevent double-tap zoom
   let lastTouchEnd = 0;
   document.addEventListener('touchend', function(event) {
     const now = Date.now();
@@ -611,7 +703,6 @@ function preventZoom() {
     lastTouchEnd = now;
   }, false);
   
-  // Prevent pinch zoom
   document.addEventListener('gesturestart', function(e) {
     e.preventDefault();
   });
@@ -630,23 +721,22 @@ async function init() {
   initTelegramWebApp();
   preventZoom();
   
-  // Try to load from localStorage first
+  // Check phone verification first
+  await checkPhoneRegistration();
+  
   const loaded = loadGameState();
   
-  // Then try to sync with server
   const serverData = await fetchUserData();
   if (serverData) {
-    // Server data takes precedence if it has higher coins
     if (serverData.coins > gameState.coins) {
       gameState.coins = serverData.coins;
       gameState.level = serverData.level || gameState.level;
-      console.log("Loaded game state from server");
     }
   }
   
   if (!loaded && !serverData) {
     gameState.energy = gameState.maxEnergy;
-    showToast(`👋 Welcome ${userName}! Play the game to earn gifts!`);
+    showToast(`👋 Welcome ${userName}! Begin your journey!`);
   }
   
   updateCoins();
@@ -655,42 +745,33 @@ async function init() {
   renderFriends();
   setupNavigation();
   startEnergyRegen();
-  initGame(); // Initialize the game
+  initGame();
+  setupPhoneRegistration();
   
-  // Save game state periodically
-  setInterval(saveGameState, 30000); // Every 30 seconds
+  setInterval(saveGameState, 30000);
+  setInterval(syncGameState, 60000);
   
-  // Sync with server periodically
-  setInterval(syncGameState, 60000); // Every 60 seconds
-  
-  // Save and sync on page unload
   window.addEventListener("beforeunload", () => {
     saveGameState();
     syncGameState();
   });
   
-  // Handle visibility change
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       saveGameState();
       syncGameState();
-      // Pause game if running
       if (queenShebaGame && queenShebaGame.isRunning) {
         queenShebaGame.stop();
       }
     } else {
-      // Reload referrals when app becomes visible
       loadReferrals();
     }
   });
   
-  console.log("Saba Gift initialized successfully!");
-  console.log("User ID:", userId);
-  console.log("User Name:", userName);
-  console.log("Referral Link:", referralLink);
+  console.log("Queen Sheba's Journey initialized!");
+  console.log("User:", userName, "ID:", userId);
 }
 
-// Start the game when DOM is ready
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);
 } else {
