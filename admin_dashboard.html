@@ -5,6 +5,109 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Saba Gift - Admin Dashboard</title>
   <style>
+    /* Password Modal Styles */
+    .password-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999999;
+    }
+
+    .password-modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: zoomIn 0.3s ease;
+    }
+
+    @keyframes zoomIn {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .password-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .password-header h1 {
+      color: #667eea;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .password-header p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .password-body {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .password-input {
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    .password-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .password-submit {
+      padding: 15px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .password-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .password-submit:active {
+      transform: translateY(0);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -352,6 +455,30 @@
   </style>
 </head>
 <body>
+  <!-- Password Modal -->
+  <div id="passwordModal" class="password-modal">
+    <div class="password-modal-content">
+      <div class="password-header">
+        <h1>🔒 Admin Access</h1>
+        <p>Enter password to access dashboard</p>
+      </div>
+      <div class="password-body">
+        <input 
+          type="password" 
+          id="passwordInput" 
+          placeholder="Enter admin password" 
+          class="password-input"
+          autofocus
+        />
+        <button onclick="submitPassword()" class="password-submit">
+          Unlock Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content (hidden until authenticated) -->
+  <div id="mainContent" style="display: none;">
   <div class="container">
     <!-- Header -->
     <div class="header">
@@ -437,7 +564,73 @@
 
   <script>
     const API_URL = 'http://localhost:5000';
+    const ADMIN_PASSWORD = 'SabaGift2025'; // Change this to your secure password
     let isApiConnected = false;
+    let isAuthenticated = false;
+
+    // Check password on load
+    function checkPassword() {
+      const savedAuth = sessionStorage.getItem('adminAuth');
+      if (savedAuth === ADMIN_PASSWORD) {
+        isAuthenticated = true;
+        document.getElementById('passwordModal').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        checkApiConnection();
+      } else {
+        document.getElementById('passwordModal').style.display = 'flex';
+        document.getElementById('mainContent').style.display = 'none';
+      }
+    }
+
+    function submitPassword() {
+      const input = document.getElementById('passwordInput');
+      const password = input.value;
+      
+      if (password === ADMIN_PASSWORD) {
+        sessionStorage.setItem('adminAuth', password);
+        isAuthenticated = true;
+        document.getElementById('passwordModal').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        showToast('✅ Access granted!');
+        init();
+      } else {
+        showToast('❌ Invalid password!');
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    // Allow Enter key to submit password
+    document.addEventListener('DOMContentLoaded', () => {
+      const passwordInput = document.getElementById('passwordInput');
+      if (passwordInput) {
+        passwordInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            submitPassword();
+          }
+        });
+      }
+      checkPassword();
+    });
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast-message';
+      toast.textContent = message;
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(0,0,0,0.9);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        z-index: 999999;
+        animation: slideIn 0.3s ease;
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
 
     // Check API connection
     async function checkApiConnection() {
@@ -656,6 +849,8 @@
 
     // Initialize
     async function init() {
+      if (!isAuthenticated) return;
+      
       // Check API connection first
       const connected = await checkApiConnection();
       
@@ -677,14 +872,15 @@
         setInterval(async () => {
           const connected = await checkApiConnection();
           if (connected) {
-            init();
+            await loadStats();
+            await loadLeaderboard();
+            await loadActivityLog();
           }
         }, 5000);
       }
     }
 
-    // Start when page loads
-    document.addEventListener('DOMContentLoaded', init);
+    // Don't auto-start - wait for authentication
   </script>
 </body>
 </html>
