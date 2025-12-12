@@ -59,7 +59,9 @@ const toastEl = document.getElementById("toast");
 let tg = null;
 let userId = null;
 let userName = "Player";
+let userPhone = null;
 let referralLink = "";
+let verificationCode = null;
 
 function initTelegramWebApp() {
   if (window.Telegram && window.Telegram.WebApp) {
@@ -83,10 +85,16 @@ function initTelegramWebApp() {
     if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
       userId = tg.initDataUnsafe.user.id;
       userName = tg.initDataUnsafe.user.first_name || "Player";
+      
+      // Try to get phone number from Telegram
+      if (tg.initDataUnsafe.user.phone_number) {
+        userPhone = tg.initDataUnsafe.user.phone_number;
+      }
     }
     
     console.log("Telegram WebApp initialized");
     console.log("User ID:", userId);
+    console.log("Phone from Telegram:", userPhone);
   }
   
   // Fallback for testing outside Telegram
