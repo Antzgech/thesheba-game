@@ -186,68 +186,54 @@
   <!-- Toast Notification -->
   <div id="toast" class="toast"></div>
 
-  <!-- Phone Registration Modal with Confirmation -->
+  <!-- Phone Registration Modal - Streamlined -->
   <div id="phoneModal" class="phone-modal">
     <div class="phone-modal-content">
       <div class="phone-modal-header">
-        <h2>📱 Verification Required</h2>
-        <p>Verify your identity to join the quest!</p>
+        <h2>📱 Phone Verification</h2>
+        <p>Verify your number to join Queen Sheba's quest!</p>
       </div>
       
       <div class="phone-modal-body">
         <div class="quest-info">
           <div class="quest-icon">🏆</div>
           <div class="quest-text">
-            <strong>Weekly Rewards for Champions!</strong>
+            <strong>Weekly Champions Reward!</strong>
             <div class="quest-reward">Top 10 win 25 ETB Airtime</div>
           </div>
         </div>
         
-        <!-- Step 1: Phone Number -->
-        <div id="phoneStep" class="verification-step">
-          <form id="phoneForm">
-            <div class="form-group">
-              <label for="phoneInput">Phone Number *</label>
-              <input 
-                type="tel" 
-                id="phoneInput" 
-                placeholder="09XXXXXXXX" 
-                required
-                maxlength="10"
-                readonly
-              />
-              <small id="phoneHelp">We detected your Telegram phone number</small>
-            </div>
-            
-            <button type="submit" class="btn-verify">Send Verification Code</button>
-          </form>
-        </div>
+        <form id="phoneForm" onsubmit="return false;">
+          <div class="form-group">
+            <label for="phoneInput">Your Phone Number</label>
+            <input 
+              type="tel" 
+              id="phoneInput" 
+              placeholder="09XXXXXXXX" 
+              required
+              maxlength="10"
+            />
+            <small id="phoneHelp">We'll send a verification code via SMS</small>
+          </div>
 
-        <!-- Step 2: Confirmation Code -->
-        <div id="confirmStep" class="verification-step" style="display: none;">
-          <div class="confirmation-sent">
-            <p>✅ Verification code sent to your Telegram!</p>
-            <p class="code-info">Check your Telegram messages from our bot</p>
+          <div class="form-group">
+            <label for="codeInput">Verification Code (Last 3 digits of your number)</label>
+            <input 
+              type="text" 
+              id="codeInput" 
+              placeholder="XXX" 
+              required
+              maxlength="3"
+              pattern="[0-9]{3}"
+              disabled
+            />
+            <small>Enter the code sent to your phone</small>
           </div>
           
-          <form id="confirmForm">
-            <div class="form-group">
-              <label for="codeInput">Enter Verification Code *</label>
-              <input 
-                type="text" 
-                id="codeInput" 
-                placeholder="XXXX" 
-                required
-                maxlength="4"
-                pattern="[0-9]{4}"
-              />
-              <small>4-digit code from Telegram</small>
-            </div>
-            
-            <button type="submit" class="btn-confirm">Confirm & Begin Quest</button>
-            <button type="button" class="btn-resend" onclick="resendCode()">Resend Code</button>
-          </form>
-        </div>
+          <button type="button" id="sendVerifyBtn" class="btn-verify">
+            Send Verification Code
+          </button>
+        </form>
         
         <div class="quest-requirements">
           <p><strong>Requirements to win rewards:</strong></p>
