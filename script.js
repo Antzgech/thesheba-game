@@ -552,176 +552,111 @@ async function checkPhoneRegistration() {
     if (response.ok) {
       const data = await response.json();
       
-      if (data.registered && data.verified) {
-        // User exists and verified - load their data
-        console.log("✅ User registered and verified");
-        return; // Continue to game
-      } else {
-        // Not registered - show registration modal
-        console.log("📱 New user - show registration");
-        showPhoneModal();
+      if (data.blocked) {
+        // User is blocked - show message and prevent play
+        showBlockedMessage();
+        return;
       }
+      
+      // User can play - just register them automatically if new
+      if (!data.registered) {
+        await autoRegisterUser();
+      }
+      
+      // Continue to game
+      return;
     } else {
-      // User doesn't exist - show registration
-      showPhoneModal();
+      // New user - auto register
+      await autoRegisterUser();
     }
   } catch (error) {
     console.error('Error checking registration:', error);
-    showPhoneModal();
+    // Continue anyway - allow play
   }
 }
 
-function showPhoneModal() {
-  const modal = document.getElementById('phoneModal');
-  const phoneInput = document.getElementById('phoneInput');
-  const sendBtn = document.getElementById('sendVerifyBtn');
-  
-  // Auto-fill phone if detected from Telegram
-  if (userPhone) {
-    let cleanPhone = userPhone.replace(/\s/g, '').replace('+251', '0');
-    if (!cleanPhone.startsWith('09')) {
-      cleanPhone = '09' + cleanPhone.slice(-8);
-    }
-    
-    phoneInput.value = cleanPhone;
-    phoneInput.readOnly = true;
-    document.getElementById('phoneHelp').textContent = '✅ Phone detected from Telegram';
-    
-    // Auto-send after short delay
-    setTimeout(() => {
-      sendVerificationCode();
-    }, 800);
-  } else {
-    phoneInput.readOnly = false;
-    document.getElementById('phoneHelp').textContent = 'Enter your Ethiopian phone number (09XXXXXXXX)';
-  }
-  
-  modal.classList.remove('hidden');
-}
-
-function hidePhoneModal() {
-  const modal = document.getElementById('phoneModal');
-  modal.classList.add('hidden');
-}
-
-function generateVerificationCode(phone) {
-  // Get last 3 digits
-  const last3 = phone.slice(-3);
-  
-  // Convert to array of numbers
-  const digits = last3.split('').map(d => parseInt(d));
-  
-  // Apply formula: multiply by 2, then add 2 to each digit
-  const code = digits.map(d => {
-    let result = (d * 2) + 2;
-    // If result is two digits, take last digit
-    if (result >= 10) {
-      result = result % 10;
-    }
-    return result;
-  }).join('');
-  
-  // Make it 4 digits by adding first digit again
-  return code + code.charAt(0);
-}
-
-async function sendVerificationCode() {
-  const phoneInput = document.getElementById('phoneInput');
-  const phone = phoneInput.value.trim();
-  const sendBtn = document.getElementById('sendVerifyBtn');
-  const codeInput = document.getElementById('codeInput');
-  const codeGroup = document.getElementById('codeGroup');
-  
-  // Validate format
-  if (!/^09[0-9]{8}$/.test(phone)) {
-    showToast('❌ Invalid phone format! Use: 09XXXXXXXX');
-    return;
-  }
-  
-  // Generate verification code using formula
-  verificationCode = generateVerificationCode(phone);
-  
-  console.log('📱 Phone:', phone);
-  console.log('🔐 Verification code:', verificationCode);
-  
+async function autoRegisterUser() {
   try {
-    // Send code via Telegram
-    const response = await fetch(`${API_BASE_URL}/api/user/${userId}/send_verification_code`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        phone_number: phone,
-        code: verificationCode,
-        user_id: userId,
-        username: userName
-      })
-    });
-    
-    if (response.ok) {
-      // Update UI
-      phoneInput.disabled = true;
-      codeGroup.style.display = 'block';
-      codeInput.disabled = false;
-      codeInput.focus();
-      sendBtn.textContent = 'Verify Code';
-      sendBtn.onclick = verifyCode;
-      
-      showToast(`📱 Code sent to your Telegram! Check your messages.`);
-    } else {
-      showToast('❌ Failed to send code. Try again.');
+    // Auto-detect phone if available
+    let phone = null;
+    if (userPhone) {
+      let cleanPhone = userPhone.replace(/\s/g, '').replace('+251', '0');
+      if (!cleanPhone.startsWith('09')) {
+        cleanPhone = '09' + cleanPhone.slice(-8);
+      }
+      phone = cleanPhone;
     }
-  } catch (error) {
-    console.error('Send code error:', error);
-    showToast('❌ Connection error. Try again.');
-  }
-}
-
-async function verifyCode() {
-  const codeInput = document.getElementById('codeInput');
-  const enteredCode = codeInput.value.trim();
-  const phoneInput = document.getElementById('phoneInput');
-  const phone = phoneInput.value.trim();
-  
-  if (enteredCode !== verificationCode) {
-    showToast('❌ Invalid code! Check your Telegram message.');
-    codeInput.value = '';
-    codeInput.focus();
-    return;
-  }
-  
-  // Code correct - save to database
-  try {
+    
+    // Register user automatically
     const response = await fetch(`${API_BASE_URL}/api/user/${userId}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         phone_number: phone,
         username: userName,
-        verified: true,
+        verified: phone ? true : false,
         telegram_id: userId
       })
     });
     
     if (response.ok) {
-      localStorage.setItem(`phoneVerified_${userId}`, 'true');
-      hidePhoneModal();
-      showToast(`✅ Welcome to the quest, ${userName}! 👑`);
-      
-      if (tg && tg.HapticFeedback) {
-        tg.HapticFeedback.notificationOccurred('success');
-      }
-    } else {
-      showToast('❌ Failed to register. Try again.');
+      console.log('✅ User auto-registered');
     }
   } catch (error) {
-    console.error('Registration error:', error);
-    showToast('❌ Connection error.');
+    console.error('Auto-registration error:', error);
   }
 }
 
+function showBlockedMessage() {
+  const modal = document.getElementById('phoneModal');
+  const modalContent = modal.querySelector('.phone-modal-content');
+  
+  modalContent.innerHTML = `
+    <div class="phone-modal-header" style="background: rgba(244, 67, 54, 0.2);">
+      <h2>🚫 Account Blocked</h2>
+      <p>Your account has been suspended</p>
+    </div>
+    <div class="phone-modal-body">
+      <div style="text-align: center; padding: 30px;">
+        <div style="font-size: 64px; margin-bottom: 20px;">🚫</div>
+        <h3 style="color: #f44336; margin-bottom: 15px;">Access Denied</h3>
+        <p style="color: #666; margin-bottom: 20px;">
+          Your account has been blocked by an administrator.<br>
+          You cannot play or participate in rewards at this time.
+        </p>
+        <p style="color: #999; font-size: 14px;">
+          If you believe this is an error, please contact support.
+        </p>
+      </div>
+    </div>
+  `;
+  
+  modal.classList.remove('hidden');
+}
+
+// Remove old verification functions
+function showPhoneModal() {
+  // Not needed anymore - users start immediately
+}
+
+function hidePhoneModal() {
+  // Not needed anymore
+}
+
+function generateVerificationCode(phone) {
+  // Not needed anymore
+}
+
+function sendVerificationCode() {
+  // Not needed anymore
+}
+
+function verifyCode() {
+  // Not needed anymore
+}
+
 function setupPhoneRegistration() {
-  const sendBtn = document.getElementById('sendVerifyBtn');
-  sendBtn.onclick = sendVerificationCode;
+  // Not needed anymore
 }
 
 // ==================== SIGN OUT ====================
@@ -802,7 +737,7 @@ async function init() {
   initTelegramWebApp();
   preventZoom();
   
-  // Check phone verification first
+  // Check if user is blocked
   await checkPhoneRegistration();
   
   const loaded = loadGameState();
@@ -827,7 +762,6 @@ async function init() {
   setupNavigation();
   startEnergyRegen();
   initGame();
-  setupPhoneRegistration();
   
   setInterval(saveGameState, 30000);
   setInterval(syncGameState, 60000);
