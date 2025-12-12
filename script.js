@@ -171,7 +171,7 @@ function initGame() {
   const gameScript = document.createElement('script');
   gameScript.src = 'game.js';
   gameScript.onload = () => {
-    queenShebaGame = new window.QueenShebaGame(canvas);
+    queenShebaGame = new window.QueenShebaGame(canvas, gameState.level);
     
     queenShebaGame.onGameOver = function() {
       overlay.classList.remove('hidden');
@@ -266,6 +266,12 @@ function updateEnergy() {
   energyText.textContent = `${gameState.energy}/${gameState.maxEnergy}`;
   const percentage = (gameState.energy / gameState.maxEnergy) * 100;
   energyFill.style.width = `${percentage}%`;
+  
+  // Update energy regen display
+  const regenDisplay = document.querySelector('.energy-regen');
+  if (regenDisplay) {
+    regenDisplay.textContent = `+${gameState.energyRegenRate}/sec`;
+  }
 }
 
 // ==================== UPGRADES ====================
