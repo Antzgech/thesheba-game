@@ -795,7 +795,7 @@ html {
   background: white;
 }
 
-.reward-info {
+.quest-info {
   background: linear-gradient(135deg, #fff3cd, #ffeaa7);
   padding: 20px;
   border-radius: 16px;
@@ -805,25 +805,110 @@ html {
   margin-bottom: 25px;
 }
 
-.reward-icon {
+.quest-icon {
   font-size: 48px;
 }
 
-.reward-text strong {
+.quest-text strong {
   display: block;
   color: #333;
   font-size: 16px;
   margin-bottom: 5px;
 }
 
-.reward-amount {
+.quest-reward {
   color: #667eea;
   font-size: 24px;
   font-weight: 700;
 }
 
+.verification-step {
+  animation: fadeIn 0.3s ease;
+}
+
+.confirmation-sent {
+  background: #d4edda;
+  border: 2px solid #28a745;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.confirmation-sent p {
+  color: #155724;
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.code-info {
+  font-weight: 600;
+  font-size: 16px !important;
+}
+
+.btn-verify, .btn-confirm {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  margin-bottom: 10px;
+}
+
+.btn-resend {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: white;
+  color: #667eea;
+  transition: all 0.3s;
+}
+
+.btn-verify:hover, .btn-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-resend:hover {
+  background: #f0f0f0;
+}
+
+.quest-requirements {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.quest-requirements p {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.quest-requirements ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.quest-requirements li {
+  color: #666;
+  padding: 5px 0;
+  font-size: 14px;
+}
+
 .form-group {
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
@@ -849,6 +934,11 @@ html {
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+.form-group input:read-only {
+  background: #f8f9fa;
+  cursor: not-allowed;
+}
+
 .form-group small {
   display: block;
   color: #999;
@@ -856,49 +946,7 @@ html {
   margin-top: 5px;
 }
 
-.form-actions {
-  display: block;
-}
-
-.btn-submit-phone {
-  width: 100%;
-  padding: 15px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-}
-
-.btn-submit-phone:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-}
-
-.requirements {
-  margin-top: 20px;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 12px;
-}
-
-.requirements p {
-  color: #333;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.requirements ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.requirements li {
-  color: #666;
-  padding: 5px 0;
-  font-size: 14px;
+#phoneHelp {
+  color: #28a745;
+  font-weight: 500;
 }
