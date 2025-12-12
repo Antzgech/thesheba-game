@@ -185,6 +185,55 @@
   <!-- Toast Notification -->
   <div id="toast" class="toast"></div>
 
+  <!-- Phone Registration Modal (Mandatory) -->
+  <div id="phoneModal" class="phone-modal">
+    <div class="phone-modal-content">
+      <div class="phone-modal-header">
+        <h2>📱 Phone Number Required</h2>
+        <p>Register to participate in weekly airtime rewards!</p>
+      </div>
+      
+      <div class="phone-modal-body">
+        <div class="reward-info">
+          <div class="reward-icon">🏆</div>
+          <div class="reward-text">
+            <strong>Top 10 players each week win!</strong>
+            <div class="reward-amount">25 ETB Ethiotelecom Airtime</div>
+          </div>
+        </div>
+        
+        <form id="phoneForm">
+          <div class="form-group">
+            <label for="phoneInput">Phone Number *</label>
+            <input 
+              type="tel" 
+              id="phoneInput" 
+              placeholder="09XXXXXXXX" 
+              pattern="09[0-9]{8}" 
+              required
+              maxlength="10"
+            />
+            <small>Format: 09XXXXXXXX (Ethiopian number)</small>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn-submit-phone">Register & Play</button>
+          </div>
+        </form>
+        
+        <div class="requirements">
+          <p><strong>Requirements to win:</strong></p>
+          <ul>
+            <li>✅ Be in Top 10 leaderboard</li>
+            <li>✅ Subscribe to YouTube channel</li>
+            <li>✅ Join Telegram channel</li>
+            <li>✅ Valid phone number</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
