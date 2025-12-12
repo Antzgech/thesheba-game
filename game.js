@@ -22,20 +22,17 @@ class QueenShebaGame {
     
     // Animation
     this.animationFrame = 0;
-    this.queenAnimFrame = 0;
     
-    // Queen Sheba (player) - Beautiful and powerful
+    // Queen Sheba (player) - Simple walking woman
     this.queen = {
       x: 80,
       y: 0,
-      width: 45,
-      height: 55,
+      width: 35,
+      height: 60,
       velocityY: 0,
       isJumping: false,
-      animationState: 'walk', // walk, run, jump
-      stepFrame: 0,
-      glowIntensity: 0,
-      powerAura: 0
+      walkCycle: 0,
+      legAngle: 0
     };
     
     // Ground
@@ -55,9 +52,6 @@ class QueenShebaGame {
     // Clouds
     this.clouds = [];
     this.initClouds();
-    
-    // Sparkles around queen
-    this.sparkles = [];
     
     // Controls
     this.setupControls();
@@ -107,24 +101,10 @@ class QueenShebaGame {
     }
   }
   
-  createSparkle() {
-    this.sparkles.push({
-      x: this.queen.x + Math.random() * this.queen.width,
-      y: this.queen.y + Math.random() * this.queen.height,
-      size: 2 + Math.random() * 3,
-      vx: (Math.random() - 0.5) * 2,
-      vy: -Math.random() * 2 - 1,
-      life: 1.0,
-      color: ['#FFD700', '#FFF44F', '#FFB6C1', '#E6E6FA'][Math.floor(Math.random() * 4)]
-    });
-  }
-  
   jump() {
     if (!this.queen.isJumping) {
       this.queen.velocityY = this.jumpForce;
       this.queen.isJumping = true;
-      this.queen.animationState = 'jump';
-      this.queen.powerAura = 1.0;
       
       if (window.tg && window.tg.HapticFeedback) {
         window.tg.HapticFeedback.impactOccurred('light');
@@ -140,11 +120,9 @@ class QueenShebaGame {
     this.speed = this.baseSpeed;
     this.obstacles = [];
     this.coins = [];
-    this.sparkles = [];
     this.queen.y = this.groundY - this.queen.height;
     this.queen.velocityY = 0;
     this.queen.isJumping = false;
-    this.queen.animationState = 'walk';
     this.animationFrame = 0;
     
     this.gameLoop();
@@ -179,10 +157,10 @@ class QueenShebaGame {
   
   createObstacle(type) {
     const obstacles = {
-      rock: { type: 'rock', x: this.canvas.width, y: this.groundY - 30, width: 30, height: 30, color: '#8B4513' },
-      cactus: { type: 'cactus', x: this.canvas.width, y: this.groundY - 40, width: 25, height: 40, color: '#228B22' },
-      web: { type: 'web', x: this.canvas.width, y: this.groundY - 80, width: 40, height: 40, color: '#C0C0C0' },
-      bird: { type: 'bird', x: this.canvas.width, y: this.groundY - 100, width: 35, height: 25, color: '#000000', wingFlap: 0 }
+      rock: { type: 'rock', x: this.canvas.width, y: this.groundY - 35, width: 35, height: 35 },
+      cactus: { type: 'cactus', x: this.canvas.width, y: this.groundY - 45, width: 30, height: 45 },
+      web: { type: 'web', x: this.canvas.width, y: this.groundY - 90, width: 45, height: 45 },
+      bird: { type: 'bird', x: this.canvas.width, y: this.groundY - 110, width: 40, height: 30, wingFlap: 0 }
     };
     return obstacles[type];
   }
@@ -192,11 +170,6 @@ class QueenShebaGame {
     
     this.score++;
     this.animationFrame++;
-    
-    // Transition from walking to running
-    if (this.score > 100 && !this.queen.isJumping) {
-      this.queen.animationState = 'run';
-    }
     
     // Speed increase
     if (this.score % 500 === 0) {
@@ -212,36 +185,13 @@ class QueenShebaGame {
       this.queen.y = this.groundY - this.queen.height;
       this.queen.velocityY = 0;
       this.queen.isJumping = false;
-      this.queen.animationState = this.score > 100 ? 'run' : 'walk';
     }
     
-    // Update queen animation
-    if (this.animationFrame % 8 === 0) {
-      this.queen.stepFrame = (this.queen.stepFrame + 1) % 4;
+    // Walking animation
+    if (!this.queen.isJumping && this.animationFrame % 6 === 0) {
+      this.queen.walkCycle = (this.queen.walkCycle + 1) % 4;
+      this.queen.legAngle = Math.sin(this.queen.walkCycle * Math.PI / 2) * 0.3;
     }
-    
-    // Update power aura
-    if (this.queen.powerAura > 0) {
-      this.queen.powerAura -= 0.02;
-    }
-    
-    // Queen's magical glow pulse
-    this.queen.glowIntensity = 0.5 + Math.sin(this.animationFrame * 0.1) * 0.5;
-    
-    // Create sparkles periodically
-    if (this.animationFrame % 5 === 0) {
-      this.createSparkle();
-    }
-    
-    // Update sparkles
-    this.sparkles.forEach((sparkle, index) => {
-      sparkle.x += sparkle.vx;
-      sparkle.y += sparkle.vy;
-      sparkle.life -= 0.02;
-      if (sparkle.life <= 0) {
-        this.sparkles.splice(index, 1);
-      }
-    });
     
     // Update clouds
     this.clouds.forEach(cloud => {
@@ -286,9 +236,7 @@ class QueenShebaGame {
         y: this.groundY - 80 - Math.random() * 60,
         width: 25,
         height: 25,
-        collected: false,
-        rotation: 0,
-        glow: 0
+        collected: false
       });
     }
     
@@ -296,8 +244,6 @@ class QueenShebaGame {
     this.coins.forEach((coin, index) => {
       if (!coin.collected) {
         coin.x -= this.speed;
-        coin.rotation += 0.1;
-        coin.glow = 0.5 + Math.sin(this.animationFrame * 0.15) * 0.5;
         
         if (coin.x + coin.width < 0) {
           this.coins.splice(index, 1);
@@ -307,7 +253,6 @@ class QueenShebaGame {
           coin.collected = true;
           this.coinsCollected++;
           this.coins.splice(index, 1);
-          this.createCoinCollectionEffect(coin);
           
           if (window.tg && window.tg.HapticFeedback) {
             window.tg.HapticFeedback.impactOccurred('light');
@@ -315,20 +260,6 @@ class QueenShebaGame {
         }
       }
     });
-  }
-  
-  createCoinCollectionEffect(coin) {
-    for (let i = 0; i < 8; i++) {
-      this.sparkles.push({
-        x: coin.x + coin.width / 2,
-        y: coin.y + coin.height / 2,
-        size: 3,
-        vx: Math.cos(i * Math.PI / 4) * 3,
-        vy: Math.sin(i * Math.PI / 4) * 3,
-        life: 1.0,
-        color: '#FFD700'
-      });
-    }
   }
   
   checkCollision(rect1, rect2) {
@@ -350,67 +281,44 @@ class QueenShebaGame {
     
     // Clouds
     this.clouds.forEach(cloud => {
-      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
       this.ctx.beginPath();
       this.ctx.ellipse(cloud.x, cloud.y, cloud.width / 2, cloud.height / 2, 0, 0, Math.PI * 2);
       this.ctx.ellipse(cloud.x + 20, cloud.y - 10, cloud.width / 3, cloud.height / 2, 0, 0, Math.PI * 2);
-      this.ctx.ellipse(cloud.x + 40, cloud.y, cloud.width / 2.5, cloud.height / 2, 0, 0, Math.PI * 2);
       this.ctx.fill();
     });
     
     // Ground
-    this.ctx.fillStyle = '#90EE90';
+    this.ctx.fillStyle = '#8BC34A';
     this.ctx.fillRect(0, this.groundY, this.canvas.width, this.canvas.height - this.groundY);
     
-    // Grass
-    this.ctx.fillStyle = '#228B22';
-    for (let i = 0; i < this.canvas.width; i += 20) {
-      this.ctx.fillRect(i, this.groundY, 10, 5);
-    }
+    // Ground line
+    this.ctx.strokeStyle = '#689F38';
+    this.ctx.lineWidth = 2;
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, this.groundY);
+    this.ctx.lineTo(this.canvas.width, this.groundY);
+    this.ctx.stroke();
     
-    // Draw sparkles behind queen
-    this.sparkles.forEach(sparkle => {
-      this.ctx.globalAlpha = sparkle.life;
-      this.ctx.fillStyle = sparkle.color;
-      this.ctx.shadowBlur = 5;
-      this.ctx.shadowColor = sparkle.color;
-      this.ctx.beginPath();
-      this.ctx.arc(sparkle.x, sparkle.y, sparkle.size, 0, Math.PI * 2);
-      this.ctx.fill();
-      this.ctx.shadowBlur = 0;
-      this.ctx.globalAlpha = 1;
-    });
-    
-    // Draw Queen Sheba (beautiful and powerful)
+    // Draw Queen Sheba (simple walking woman)
     this.drawQueenSheba();
     
-    // Obstacles
+    // Draw obstacles (more visible)
     this.obstacles.forEach(obstacle => {
       this.drawObstacle(obstacle);
     });
     
-    // Coins with glow
+    // Draw coins
     this.coins.forEach(coin => {
       if (!coin.collected) {
-        this.ctx.save();
-        this.ctx.translate(coin.x + coin.width / 2, coin.y + coin.height / 2);
-        this.ctx.rotate(coin.rotation);
-        
-        this.ctx.shadowColor = '#FFD700';
-        this.ctx.shadowBlur = 15 * coin.glow;
-        
         this.ctx.fillStyle = '#FFD700';
         this.ctx.beginPath();
-        this.ctx.arc(0, 0, coin.width / 2, 0, Math.PI * 2);
+        this.ctx.arc(coin.x + coin.width / 2, coin.y + coin.height / 2, coin.width / 2, 0, Math.PI * 2);
         this.ctx.fill();
         
-        this.ctx.fillStyle = '#FFA500';
-        this.ctx.beginPath();
-        this.ctx.arc(0, 0, coin.width / 3, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        this.ctx.shadowBlur = 0;
-        this.ctx.restore();
+        this.ctx.strokeStyle = '#FFA500';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
       }
     });
   }
@@ -418,243 +326,182 @@ class QueenShebaGame {
   drawQueenSheba() {
     const q = this.queen;
     const centerX = q.x + q.width / 2;
-    const centerY = q.y + q.height / 2;
     
-    // Magical power aura
-    if (q.powerAura > 0) {
-      this.ctx.globalAlpha = q.powerAura * 0.3;
-      const auraGradient = this.ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 40);
-      auraGradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
-      auraGradient.addColorStop(0.5, 'rgba(255, 182, 193, 0.4)');
-      auraGradient.addColorStop(1, 'rgba(230, 230, 250, 0)');
-      this.ctx.fillStyle = auraGradient;
-      this.ctx.beginPath();
-      this.ctx.arc(centerX, centerY, 40, 0, Math.PI * 2);
-      this.ctx.fill();
-      this.ctx.globalAlpha = 1;
-    }
+    this.ctx.save();
     
-    // Glowing aura around queen
-    this.ctx.shadowBlur = 20 * q.glowIntensity;
-    this.ctx.shadowColor = '#FFD700';
-    
-    // Shadow
-    this.ctx.shadowBlur = 0;
-    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    // Head
+    this.ctx.fillStyle = '#FFE4C4';
     this.ctx.beginPath();
-    this.ctx.ellipse(centerX, this.groundY - 5, q.width / 2, 5, 0, 0, Math.PI * 2);
+    this.ctx.arc(centerX, q.y + 15, 10, 0, Math.PI * 2);
     this.ctx.fill();
     
-    // Dress - Beautiful flowing royal purple with gold accents
-    this.ctx.shadowBlur = 10;
-    this.ctx.shadowColor = '#FFD700';
-    const dressGradient = this.ctx.createLinearGradient(q.x, q.y, q.x, q.y + q.height);
-    dressGradient.addColorStop(0, '#9370DB');
-    dressGradient.addColorStop(0.3, '#8A2BE2');
-    dressGradient.addColorStop(0.7, '#9370DB');
-    dressGradient.addColorStop(1, '#7B68EE');
-    this.ctx.fillStyle = dressGradient;
+    // Hair
+    this.ctx.fillStyle = '#4A2511';
     this.ctx.beginPath();
+    this.ctx.arc(centerX - 5, q.y + 12, 8, 0, Math.PI * 2);
+    this.ctx.arc(centerX + 5, q.y + 12, 8, 0, Math.PI * 2);
+    this.ctx.arc(centerX, q.y + 10, 10, Math.PI, 0);
+    this.ctx.fill();
     
-    // Animated flowing dress
-    const dressAnimation = Math.sin(this.animationFrame * 0.2) * 3;
-    this.ctx.moveTo(centerX, q.y + 18);
-    this.ctx.lineTo(q.x - 5 + dressAnimation, q.y + q.height);
-    this.ctx.lineTo(q.x + q.width + 5 - dressAnimation, q.y + q.height);
+    // Simple crown
+    this.ctx.fillStyle = '#FFD700';
+    this.ctx.beginPath();
+    this.ctx.moveTo(centerX - 8, q.y + 8);
+    this.ctx.lineTo(centerX - 6, q.y + 3);
+    this.ctx.lineTo(centerX - 2, q.y + 6);
+    this.ctx.lineTo(centerX, q.y + 2);
+    this.ctx.lineTo(centerX + 2, q.y + 6);
+    this.ctx.lineTo(centerX + 6, q.y + 3);
+    this.ctx.lineTo(centerX + 8, q.y + 8);
+    this.ctx.fill();
+    
+    // Body (dress)
+    this.ctx.fillStyle = '#9C27B0';
+    this.ctx.beginPath();
+    this.ctx.moveTo(centerX, q.y + 25);
+    this.ctx.lineTo(centerX - 12, q.y + 50);
+    this.ctx.lineTo(centerX + 12, q.y + 50);
     this.ctx.closePath();
     this.ctx.fill();
     
-    // Gold trim on dress
-    this.ctx.strokeStyle = '#FFD700';
+    // Dress details
+    this.ctx.strokeStyle = '#7B1FA2';
     this.ctx.lineWidth = 2;
     this.ctx.stroke();
     
-    // Beautiful detailed dress pattern
-    this.ctx.shadowBlur = 0;
-    this.ctx.fillStyle = '#FFD700';
-    for (let i = 0; i < 3; i++) {
-      this.ctx.beginPath();
-      this.ctx.arc(centerX - 8 + i * 8, q.y + 25 + i * 5, 2, 0, Math.PI * 2);
-      this.ctx.fill();
-    }
+    // Arms
+    this.ctx.strokeStyle = '#FFE4C4';
+    this.ctx.lineWidth = 4;
+    this.ctx.lineCap = 'round';
     
-    // Head - Beautiful skin tone
-    this.ctx.shadowBlur = 5;
-    this.ctx.shadowColor = '#FFE4B5';
-    this.ctx.fillStyle = '#FFE4B5';
-    this.ctx.beginPath();
-    this.ctx.arc(centerX, q.y + 12, 13, 0, Math.PI * 2);
-    this.ctx.fill();
-    
-    // Beautiful flowing hair
-    this.ctx.shadowBlur = 8;
-    this.ctx.shadowColor = '#8B4513';
-    this.ctx.fillStyle = '#654321';
-    this.ctx.beginPath();
-    const hairFlow = Math.sin(this.animationFrame * 0.15) * 2;
-    this.ctx.ellipse(centerX - 8, q.y + 10, 8, 12, -0.3, 0, Math.PI * 2);
-    this.ctx.ellipse(centerX + 8, q.y + 10, 8, 12, 0.3, 0, Math.PI * 2);
-    this.ctx.fill();
-    
-    // Crown - Magnificent and detailed
-    this.ctx.shadowBlur = 15;
-    this.ctx.shadowColor = '#FFD700';
-    this.ctx.fillStyle = '#FFD700';
-    this.ctx.beginPath();
-    this.ctx.moveTo(centerX - 14, q.y + 6);
-    this.ctx.lineTo(centerX - 10, q.y - 3);
-    this.ctx.lineTo(centerX - 6, q.y + 4);
-    this.ctx.lineTo(centerX - 2, q.y - 5);
-    this.ctx.lineTo(centerX + 2, q.y + 4);
-    this.ctx.lineTo(centerX + 6, q.y - 3);
-    this.ctx.lineTo(centerX + 10, q.y + 4);
-    this.ctx.lineTo(centerX + 14, q.y - 1);
-    this.ctx.lineTo(centerX + 14, q.y + 6);
-    this.ctx.lineTo(centerX - 14, q.y + 6);
-    this.ctx.fill();
-    
-    // Crown jewels - Ruby, Sapphire, Emerald
-    this.ctx.shadowBlur = 10;
-    const jewels = [
-      { x: centerX - 10, y: q.y - 1, color: '#FF1493' }, // Ruby
-      { x: centerX, y: q.y - 3, color: '#4169E1' },      // Sapphire  
-      { x: centerX + 10, y: q.y - 1, color: '#50C878' }   // Emerald
-    ];
-    
-    jewels.forEach(jewel => {
-      this.ctx.shadowColor = jewel.color;
-      this.ctx.fillStyle = jewel.color;
-      this.ctx.beginPath();
-      this.ctx.arc(jewel.x, jewel.y, 3, 0, Math.PI * 2);
-      this.ctx.fill();
-      
-      // Sparkle effect on jewels
-      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      this.ctx.beginPath();
-      this.ctx.arc(jewel.x - 1, jewel.y - 1, 1, 0, Math.PI * 2);
-      this.ctx.fill();
-    });
-    
-    // Beautiful eyes
-    this.ctx.shadowBlur = 0;
-    this.ctx.fillStyle = '#000';
-    this.ctx.beginPath();
-    this.ctx.arc(centerX - 4, q.y + 11, 1.5, 0, Math.PI * 2);
-    this.ctx.arc(centerX + 4, q.y + 11, 1.5, 0, Math.PI * 2);
-    this.ctx.fill();
-    
-    // Eyelashes
-    this.ctx.strokeStyle = '#000';
-    this.ctx.lineWidth = 1;
-    this.ctx.beginPath();
-    this.ctx.moveTo(centerX - 5, q.y + 10);
-    this.ctx.lineTo(centerX - 6, q.y + 9);
-    this.ctx.moveTo(centerX + 5, q.y + 10);
-    this.ctx.lineTo(centerX + 6, q.y + 9);
-    this.ctx.stroke();
-    
-    // Beautiful smile
-    this.ctx.strokeStyle = '#8B4513';
-    this.ctx.lineWidth = 1.5;
-    this.ctx.beginPath();
-    this.ctx.arc(centerX, q.y + 14, 4, 0.2, Math.PI - 0.2);
-    this.ctx.stroke();
-    
-    // Graceful arms with golden bracelets
-    this.ctx.shadowBlur = 5;
-    this.ctx.shadowColor = '#FFE4B5';
-    this.ctx.strokeStyle = '#FFE4B5';
-    this.ctx.lineWidth = 5;
-    
-    // Animated arms for walking/running
-    const armSwing = Math.sin(q.stepFrame * Math.PI / 2) * 8;
+    const armSwing = this.queen.legAngle * 10;
     
     // Left arm
     this.ctx.beginPath();
-    this.ctx.moveTo(q.x + 8, q.y + 22);
-    this.ctx.lineTo(q.x + 2 + armSwing, q.y + 32);
+    this.ctx.moveTo(centerX - 8, q.y + 28);
+    this.ctx.lineTo(centerX - 12 - armSwing, q.y + 38);
     this.ctx.stroke();
     
     // Right arm
     this.ctx.beginPath();
-    this.ctx.moveTo(q.x + q.width - 8, q.y + 22);
-    this.ctx.lineTo(q.x + q.width - 2 - armSwing, q.y + 32);
+    this.ctx.moveTo(centerX + 8, q.y + 28);
+    this.ctx.lineTo(centerX + 12 + armSwing, q.y + 38);
     this.ctx.stroke();
     
-    // Golden bracelets
-    this.ctx.strokeStyle = '#FFD700';
-    this.ctx.lineWidth = 3;
-    this.ctx.shadowBlur = 8;
-    this.ctx.shadowColor = '#FFD700';
-    this.ctx.beginPath();
-    this.ctx.arc(q.x + 2 + armSwing, q.y + 32, 3, 0, Math.PI * 2);
-    this.ctx.stroke();
-    this.ctx.beginPath();
-    this.ctx.arc(q.x + q.width - 2 - armSwing, q.y + 32, 3, 0, Math.PI * 2);
-    this.ctx.stroke();
+    // Legs (walking animation)
+    if (!this.queen.isJumping) {
+      this.ctx.strokeStyle = '#FFE4C4';
+      this.ctx.lineWidth = 5;
+      
+      const legSwing = this.queen.legAngle * 15;
+      
+      // Left leg
+      this.ctx.beginPath();
+      this.ctx.moveTo(centerX - 5, q.y + 48);
+      this.ctx.lineTo(centerX - 5 - legSwing, q.y + 60);
+      this.ctx.stroke();
+      
+      // Right leg
+      this.ctx.beginPath();
+      this.ctx.moveTo(centerX + 5, q.y + 48);
+      this.ctx.lineTo(centerX + 5 + legSwing, q.y + 60);
+      this.ctx.stroke();
+    }
     
-    // Reset shadow
-    this.ctx.shadowBlur = 0;
+    this.ctx.restore();
   }
   
   drawObstacle(obstacle) {
+    this.ctx.save();
+    
     switch (obstacle.type) {
       case 'rock':
-        this.ctx.fillStyle = obstacle.color;
+        // Simple gray rock - very visible
+        this.ctx.fillStyle = '#757575';
         this.ctx.beginPath();
         this.ctx.moveTo(obstacle.x + obstacle.width / 2, obstacle.y);
         this.ctx.lineTo(obstacle.x + obstacle.width, obstacle.y + obstacle.height);
         this.ctx.lineTo(obstacle.x, obstacle.y + obstacle.height);
         this.ctx.closePath();
         this.ctx.fill();
-        this.ctx.fillStyle = '#654321';
-        this.ctx.fillRect(obstacle.x + 8, obstacle.y + 15, 4, 4);
+        
+        // Outline
+        this.ctx.strokeStyle = '#424242';
+        this.ctx.lineWidth = 3;
+        this.ctx.stroke();
         break;
         
       case 'cactus':
-        this.ctx.fillStyle = obstacle.color;
-        this.ctx.fillRect(obstacle.x + 8, obstacle.y, 10, obstacle.height);
-        this.ctx.fillRect(obstacle.x, obstacle.y + 10, 8, 15);
-        this.ctx.fillRect(obstacle.x + 18, obstacle.y + 10, 8, 15);
+        // Green cactus - very visible
+        this.ctx.fillStyle = '#4CAF50';
+        this.ctx.fillRect(obstacle.x + 10, obstacle.y, 12, obstacle.height);
+        this.ctx.fillRect(obstacle.x, obstacle.y + 15, 10, 20);
+        this.ctx.fillRect(obstacle.x + 22, obstacle.y + 15, 10, 20);
+        
+        // Outline
+        this.ctx.strokeStyle = '#2E7D32';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(obstacle.x + 10, obstacle.y, 12, obstacle.height);
         break;
         
       case 'web':
-        this.ctx.strokeStyle = obstacle.color;
-        this.ctx.lineWidth = 2;
-        for (let i = 0; i < 4; i++) {
+        // Spider web - very visible
+        this.ctx.strokeStyle = '#424242';
+        this.ctx.lineWidth = 3;
+        
+        const cx = obstacle.x + obstacle.width / 2;
+        const cy = obstacle.y + obstacle.height / 2;
+        
+        // Draw web lines
+        for (let i = 0; i < 8; i++) {
+          const angle = (i * Math.PI) / 4;
           this.ctx.beginPath();
-          this.ctx.moveTo(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2);
-          const angle = (i * Math.PI) / 2;
+          this.ctx.moveTo(cx, cy);
           this.ctx.lineTo(
-            obstacle.x + obstacle.width / 2 + Math.cos(angle) * obstacle.width / 2,
-            obstacle.y + obstacle.height / 2 + Math.sin(angle) * obstacle.height / 2
+            cx + Math.cos(angle) * obstacle.width / 2,
+            cy + Math.sin(angle) * obstacle.height / 2
           );
           this.ctx.stroke();
         }
+        
+        // Spider
         this.ctx.fillStyle = '#000';
         this.ctx.beginPath();
-        this.ctx.arc(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2, 5, 0, Math.PI * 2);
+        this.ctx.arc(cx, cy, 8, 0, Math.PI * 2);
         this.ctx.fill();
         break;
         
       case 'bird':
-        this.ctx.fillStyle = obstacle.color;
+        // Flying bird - very visible
+        this.ctx.fillStyle = '#424242';
+        
+        // Body
         this.ctx.beginPath();
-        this.ctx.ellipse(obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2, 
-                        obstacle.width / 3, obstacle.height / 3, 0, 0, Math.PI * 2);
+        this.ctx.ellipse(
+          obstacle.x + obstacle.width / 2, 
+          obstacle.y + obstacle.height / 2, 
+          obstacle.width / 3, 
+          obstacle.height / 3, 
+          0, 0, Math.PI * 2
+        );
         this.ctx.fill();
-        const wingOffset = Math.sin(obstacle.wingFlap) * 5;
+        
+        // Wings
+        const wingY = obstacle.y + obstacle.height / 2 + Math.sin(obstacle.wingFlap) * 8;
+        
         this.ctx.beginPath();
-        this.ctx.moveTo(obstacle.x, obstacle.y + obstacle.height / 2);
-        this.ctx.quadraticCurveTo(obstacle.x - 5, obstacle.y + wingOffset, obstacle.x + 5, obstacle.y + 10);
+        this.ctx.moveTo(obstacle.x, wingY);
+        this.ctx.quadraticCurveTo(obstacle.x - 5, obstacle.y + 5, obstacle.x + 5, obstacle.y + 15);
         this.ctx.fill();
+        
         this.ctx.beginPath();
-        this.ctx.moveTo(obstacle.x + obstacle.width, obstacle.y + obstacle.height / 2);
-        this.ctx.quadraticCurveTo(obstacle.x + obstacle.width + 5, obstacle.y + wingOffset, 
-                                  obstacle.x + obstacle.width - 5, obstacle.y + 10);
+        this.ctx.moveTo(obstacle.x + obstacle.width, wingY);
+        this.ctx.quadraticCurveTo(obstacle.x + obstacle.width + 5, obstacle.y + 5, obstacle.x + obstacle.width - 5, obstacle.y + 15);
         this.ctx.fill();
         break;
     }
+    
+    this.ctx.restore();
   }
   
   gameLoop() {
