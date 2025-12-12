@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Saba Gift - Queen Sheba Runner</title>
+  <title>Queen Sheba's Journey to King Solomon</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -15,7 +15,7 @@
     <!-- Top Stats Bar -->
     <div class="top-bar">
       <div class="stat-item">
-        <span class="stat-label">Balance</span>
+        <span class="stat-label">Gifts Collected</span>
         <div id="coins" class="coins">0</div>
       </div>
       <div class="stat-item">
@@ -30,9 +30,10 @@
       <section id="homeSection" class="section active">
         <div class="home-content">
           <div class="balance-display">
-            <div class="balance-icon">👑</div>
+            <div class="quest-title">👑 Queen Sheba's Journey</div>
+            <div class="quest-subtitle">Travel to meet King Solomon</div>
             <div id="coinsDisplay" class="balance-amount">0</div>
-            <div class="balance-label">Saba Gifts</div>
+            <div class="balance-label">Gifts for the King</div>
           </div>
 
           <!-- Game Canvas Container -->
@@ -40,14 +41,14 @@
             <canvas id="gameCanvas"></canvas>
             <div id="gameOverlay" class="game-overlay">
               <div class="game-instructions">
-                <h3>🎮 How to Play</h3>
-                <p><strong>Tap / Space</strong> to make Queen Sheba jump</p>
-                <p><strong>Collect coins</strong> to earn gifts</p>
-                <p><strong>Avoid obstacles</strong> to keep playing</p>
-                <button class="start-game-btn" id="startBtn">Start Game</button>
+                <h3>👑 The Quest Begins</h3>
+                <p>Queen Sheba must journey to Jerusalem to meet the wise King Solomon</p>
+                <p><strong>Tap/Space</strong> to jump over obstacles</p>
+                <p><strong>Collect gifts</strong> to present to the King</p>
+                <button class="start-game-btn" id="startBtn">Begin Journey</button>
               </div>
             </div>
-            <div id="gameScore" class="game-score">Score: 0</div>
+            <div id="gameScore" class="game-score">Distance: 0</div>
           </div>
 
           <div class="energy-container">
@@ -61,7 +62,7 @@
             <div class="energy-bar">
               <div id="energyFill" class="energy-fill"></div>
             </div>
-            <div class="energy-note">Each game costs 1 energy</div>
+            <div class="energy-note">Each journey costs 1 energy</div>
           </div>
         </div>
       </section>
@@ -69,8 +70,8 @@
       <!-- Mine Section -->
       <section id="mineSection" class="section">
         <div class="section-header">
-          <h2>⛏️ Mine</h2>
-          <p class="section-subtitle">Upgrade your earning power</p>
+          <h2>⛏️ Prepare for Journey</h2>
+          <p class="section-subtitle">Upgrade Queen Sheba's abilities</p>
         </div>
         <div id="upgrades" class="upgrades-grid"></div>
       </section>
@@ -78,15 +79,15 @@
       <!-- Earn Section -->
       <section id="earnSection" class="section">
         <div class="section-header">
-          <h2>💰 Earn More</h2>
-          <p class="section-subtitle">Complete tasks and get rewards</p>
+          <h2>💰 Earn More Gifts</h2>
+          <p class="section-subtitle">Complete tasks for extra rewards</p>
         </div>
         
         <div class="tasks-container">
           <div class="task-card daily-reward">
             <div class="task-icon">🎁</div>
             <div class="task-info">
-              <div class="task-title">Daily Reward</div>
+              <div class="task-title">Daily Blessing</div>
               <div class="task-reward">+50 Gifts</div>
             </div>
             <button class="task-btn" onclick="claimDailyReward()">Claim</button>
@@ -124,13 +125,13 @@
       <!-- Friends Section -->
       <section id="friendsSection" class="section">
         <div class="section-header">
-          <h2>👥 Invite Friends</h2>
-          <p class="section-subtitle">Get 10% from friends + 2.5% from their referrals</p>
+          <h2>👥 Invite Companions</h2>
+          <p class="section-subtitle">Bring friends on the journey - earn together!</p>
         </div>
 
         <div class="referral-card">
           <div class="referral-header">
-            <span class="referral-label">Your Referral Link</span>
+            <span class="referral-label">Your Invitation Link</span>
           </div>
           <div class="referral-link-box">
             <div id="referralLink" class="referral-link"></div>
@@ -147,14 +148,14 @@
 
         <div class="friends-card">
           <div class="friends-header">
-            <h3>Your Friends</h3>
+            <h3>Your Companions</h3>
             <span id="friendsCount" class="friends-count">0</span>
           </div>
           <div id="friendsContainer" class="friends-list">
             <div class="empty-state">
               <div class="empty-icon">👥</div>
-              <div class="empty-text">No friends invited yet</div>
-              <div class="empty-subtext">Share your link to get started!</div>
+              <div class="empty-text">No companions yet</div>
+              <div class="empty-subtext">Share your link to journey together!</div>
             </div>
           </div>
         </div>
@@ -165,11 +166,11 @@
     <nav class="bottom-nav">
       <button class="nav-item active" data-section="home">
         <span class="nav-icon">👑</span>
-        <span class="nav-label">Play</span>
+        <span class="nav-label">Journey</span>
       </button>
       <button class="nav-item" data-section="mine">
-        <span class="nav-icon">⛏️</span>
-        <span class="nav-label">Mine</span>
+        <span class="nav-icon">⚔️</span>
+        <span class="nav-label">Prepare</span>
       </button>
       <button class="nav-item" data-section="earn">
         <span class="nav-icon">💰</span>
@@ -177,7 +178,7 @@
       </button>
       <button class="nav-item" data-section="friends">
         <span class="nav-icon">👥</span>
-        <span class="nav-label">Friends</span>
+        <span class="nav-label">Companions</span>
       </button>
     </nav>
   </div>
@@ -185,49 +186,76 @@
   <!-- Toast Notification -->
   <div id="toast" class="toast"></div>
 
-  <!-- Phone Registration Modal (Mandatory) -->
+  <!-- Phone Registration Modal with Confirmation -->
   <div id="phoneModal" class="phone-modal">
     <div class="phone-modal-content">
       <div class="phone-modal-header">
-        <h2>📱 Phone Number Required</h2>
-        <p>Register to participate in weekly airtime rewards!</p>
+        <h2>📱 Verification Required</h2>
+        <p>Verify your identity to join the quest!</p>
       </div>
       
       <div class="phone-modal-body">
-        <div class="reward-info">
-          <div class="reward-icon">🏆</div>
-          <div class="reward-text">
-            <strong>Top 10 players each week win!</strong>
-            <div class="reward-amount">25 ETB Ethiotelecom Airtime</div>
+        <div class="quest-info">
+          <div class="quest-icon">🏆</div>
+          <div class="quest-text">
+            <strong>Weekly Rewards for Champions!</strong>
+            <div class="quest-reward">Top 10 win 25 ETB Airtime</div>
           </div>
         </div>
         
-        <form id="phoneForm">
-          <div class="form-group">
-            <label for="phoneInput">Phone Number *</label>
-            <input 
-              type="tel" 
-              id="phoneInput" 
-              placeholder="09XXXXXXXX" 
-              pattern="09[0-9]{8}" 
-              required
-              maxlength="10"
-            />
-            <small>Format: 09XXXXXXXX (Ethiopian number)</small>
+        <!-- Step 1: Phone Number -->
+        <div id="phoneStep" class="verification-step">
+          <form id="phoneForm">
+            <div class="form-group">
+              <label for="phoneInput">Phone Number *</label>
+              <input 
+                type="tel" 
+                id="phoneInput" 
+                placeholder="09XXXXXXXX" 
+                required
+                maxlength="10"
+                readonly
+              />
+              <small id="phoneHelp">We detected your Telegram phone number</small>
+            </div>
+            
+            <button type="submit" class="btn-verify">Send Verification Code</button>
+          </form>
+        </div>
+
+        <!-- Step 2: Confirmation Code -->
+        <div id="confirmStep" class="verification-step" style="display: none;">
+          <div class="confirmation-sent">
+            <p>✅ Verification code sent to your Telegram!</p>
+            <p class="code-info">Check your Telegram messages from our bot</p>
           </div>
           
-          <div class="form-actions">
-            <button type="submit" class="btn-submit-phone">Register & Play</button>
-          </div>
-        </form>
+          <form id="confirmForm">
+            <div class="form-group">
+              <label for="codeInput">Enter Verification Code *</label>
+              <input 
+                type="text" 
+                id="codeInput" 
+                placeholder="XXXX" 
+                required
+                maxlength="4"
+                pattern="[0-9]{4}"
+              />
+              <small>4-digit code from Telegram</small>
+            </div>
+            
+            <button type="submit" class="btn-confirm">Confirm & Begin Quest</button>
+            <button type="button" class="btn-resend" onclick="resendCode()">Resend Code</button>
+          </form>
+        </div>
         
-        <div class="requirements">
-          <p><strong>Requirements to win:</strong></p>
+        <div class="quest-requirements">
+          <p><strong>Requirements to win rewards:</strong></p>
           <ul>
-            <li>✅ Be in Top 10 leaderboard</li>
-            <li>✅ Subscribe to YouTube channel</li>
+            <li>✅ Top 10 on leaderboard</li>
+            <li>✅ Subscribe YouTube channel</li>
             <li>✅ Join Telegram channel</li>
-            <li>✅ Valid phone number</li>
+            <li>✅ Verified phone number</li>
           </ul>
         </div>
       </div>
