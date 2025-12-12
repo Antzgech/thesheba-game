@@ -186,12 +186,12 @@
   <!-- Toast Notification -->
   <div id="toast" class="toast"></div>
 
-  <!-- Phone Registration Modal - Streamlined -->
+  <!-- Phone Registration Modal - First Time Only -->
   <div id="phoneModal" class="phone-modal">
     <div class="phone-modal-content">
       <div class="phone-modal-header">
-        <h2>📱 Phone Verification</h2>
-        <p>Verify your number to join Queen Sheba's quest!</p>
+        <h2>👑 Welcome to Queen Sheba's Journey</h2>
+        <p>Join the quest to meet King Solomon!</p>
       </div>
       
       <div class="phone-modal-body">
@@ -213,21 +213,21 @@
               required
               maxlength="10"
             />
-            <small id="phoneHelp">We'll send a verification code via SMS</small>
+            <small id="phoneHelp">We'll send a verification code via Telegram</small>
           </div>
 
-          <div class="form-group">
-            <label for="codeInput">Verification Code (Last 3 digits of your number)</label>
+          <div class="form-group" id="codeGroup" style="display: none;">
+            <label for="codeInput">Verification Code</label>
             <input 
               type="text" 
               id="codeInput" 
-              placeholder="XXX" 
+              placeholder="XXXX" 
               required
-              maxlength="3"
-              pattern="[0-9]{3}"
+              maxlength="4"
+              pattern="[0-9]{4}"
               disabled
             />
-            <small>Enter the code sent to your phone</small>
+            <small>Enter the 4-digit code sent to your Telegram</small>
           </div>
           
           <button type="button" id="sendVerifyBtn" class="btn-verify">
@@ -236,13 +236,49 @@
         </form>
         
         <div class="quest-requirements">
-          <p><strong>Requirements to win rewards:</strong></p>
+          <p><strong>📋 To qualify for weekly rewards:</strong></p>
           <ul>
-            <li>✅ Top 10 on leaderboard</li>
-            <li>✅ Subscribe YouTube channel</li>
+            <li>✅ Be in Top 10 leaderboard</li>
+            <li>✅ Subscribe to YouTube channel</li>
             <li>✅ Join Telegram channel</li>
             <li>✅ Verified phone number</li>
           </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign Out Confirmation Modal -->
+  <div id="signOutModal" class="phone-modal" style="display: none;">
+    <div class="phone-modal-content signout-modal">
+      <div class="phone-modal-header danger-header">
+        <h2>⚠️ Delete Account?</h2>
+        <p>This action cannot be undone!</p>
+      </div>
+      
+      <div class="phone-modal-body">
+        <div class="danger-warning">
+          <div class="warning-icon">🗑️</div>
+          <div class="warning-text">
+            <strong>All your data will be permanently deleted:</strong>
+            <ul>
+              <li>❌ <span id="deleteCoins">0</span> Gifts collected</li>
+              <li>❌ Level <span id="deleteLevel">1</span> progress</li>
+              <li>❌ All upgrades</li>
+              <li>❌ Game statistics</li>
+              <li>❌ Friend referrals</li>
+            </ul>
+            <p class="warning-note">You will start from scratch if you return!</p>
+          </div>
+        </div>
+        
+        <div class="signout-actions">
+          <button class="btn-cancel" onclick="cancelSignOut()">
+            Cancel - Keep Playing
+          </button>
+          <button class="btn-delete" onclick="confirmSignOut()">
+            Yes, Delete Everything
+          </button>
         </div>
       </div>
     </div>
