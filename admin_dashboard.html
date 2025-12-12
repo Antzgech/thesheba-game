@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saba Gift - Admin Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+      font-size: 32px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 16px;
+    }
+
+    .connection-status {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    .connection-status.online {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .connection-status.offline {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .stat-card .label {
+      color: #666;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .stat-card .value {
+      color: #333;
+      font-size: 36px;
+      font-weight: 700;
+    }
+
+    .stat-card .icon {
+      font-size: 40px;
+      margin-bottom: 15px;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 30px;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    .card h2 {
+      color: #333;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 24px;
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .leaderboard-table thead {
+      background: #f8f9fa;
+    }
+
+    .leaderboard-table th {
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      color: #666;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .leaderboard-table td {
+      padding: 15px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .leaderboard-table tr:hover {
+      background: #f8f9fa;
+    }
+
+    .rank {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .rank.gold { color: #FFD700; }
+    .rank.silver { color: #C0C0C0; }
+    .rank.bronze { color: #CD7F32; }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .user-phone {
+      color: #667eea;
+      font-size: 14px;
+    }
+
+    .user-id {
+      color: #999;
+      font-size: 12px;
+    }
+
+    .coins {
+      font-weight: 700;
+      color: #FFD700;
+      font-size: 18px;
+    }
+
+    .level {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .reward-status {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .reward-status.pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .reward-status.paid {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .week-selector {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .week-selector label {
+      font-weight: 600;
+      color: #666;
+    }
+
+    .week-selector select {
+      padding: 8px 15px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+    }
+
+    .activity-log {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .activity-item {
+      padding: 15px;
+      border-left: 3px solid #667eea;
+      background: #f8f9fa;
+      margin-bottom: 10px;
+      border-radius: 8px;
+    }
+
+    .activity-time {
+      color: #999;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .activity-text {
+      color: #333;
+      font-size: 14px;
+    }
+
+    .export-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px solid #f0f0f0;
+    }
+
+    .alert {
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .alert-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border-left: 4px solid #0c5460;
+    }
+
+    .alert-danger {
+      background: #f8d7da;
+      color: #721c24;
+      border-left: 4px solid #721c24;
+    }
+
+    .phone-verified {
+      color: #28a745;
+      font-size: 12px;
+    }
+
+    .phone-missing {
+      color: #dc3545;
+      font-size: 12px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    @media (max-width: 1024px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      .actions, .btn {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>🎁 Saba Gift Admin Dashboard</h1>
+      <p>Weekly Airtime Reward Management System</p>
+      <div id="connectionStatus" class="connection-status offline">
+        ⚠️ Connecting to API...
+      </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon">👥</div>
+        <div class="label">Total Users</div>
+        <div class="value" id="totalUsers">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">💰</div>
+        <div class="label">Total Coins</div>
+        <div class="value" id="totalCoins">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">🔗</div>
+        <div class="label">Total Referrals</div>
+        <div class="value" id="totalReferrals">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">🎯</div>
+        <div class="label">Weekly Winners</div>
+        <div class="value">10</div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <!-- Leaderboard -->
+      <div class="card">
+        <h2>🏆 Weekly Top 10 Winners</h2>
+
+        <div class="alert alert-info">
+          <strong>💵 Weekly Reward:</strong> Top 10 players get 25 ETB Ethiotelecom airtime each!
+          <br><strong>📅 Period:</strong> Current Week
+        </div>
+
+        <div id="errorMessage" style="display: none;"></div>
+
+        <div class="week-selector">
+          <label>Select Week:</label>
+          <select id="weekSelector">
+            <option value="current">Current Week</option>
+            <option value="last">Last Week</option>
+            <option value="2weeks">2 Weeks Ago</option>
+          </select>
+          <button class="btn btn-primary btn-small" onclick="loadLeaderboard()">Refresh</button>
+        </div>
+
+        <div id="leaderboardContainer">
+          <div class="loading">Loading leaderboard...</div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" onclick="exportToCSV()">
+            📄 Export to CSV
+          </button>
+          <button class="btn btn-success" onclick="markAllAsPaid()">
+            ✅ Mark All as Paid
+          </button>
+          <button class="btn btn-primary" onclick="window.print()">
+            🖨️ Print List
+          </button>
+        </div>
+      </div>
+
+      <!-- Activity Log -->
+      <div class="card">
+        <h2>📊 Activity Log</h2>
+        <div class="activity-log" id="activityLog">
+          <div class="loading">Loading activity...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:5000';
+    let isApiConnected = false;
+
+    // Check API connection
+    async function checkApiConnection() {
+      const statusEl = document.getElementById('connectionStatus');
+      try {
+        const response = await fetch(`${API_URL}/api/health`);
+        if (response.ok) {
+          isApiConnected = true;
+          statusEl.className = 'connection-status online';
+          statusEl.innerHTML = '✅ API Connected';
+          hideError();
+          return true;
+        }
+      } catch (error) {
+        isApiConnected = false;
+        statusEl.className = 'connection-status offline';
+        statusEl.innerHTML = '❌ API Offline';
+        showError('Cannot connect to API server. Make sure python api.py is running on port 5000.');
+        return false;
+      }
+    }
+
+    function showError(message) {
+      const errorEl = document.getElementById('errorMessage');
+      errorEl.className = 'alert alert-danger';
+      errorEl.innerHTML = `<strong>Error:</strong> ${message}`;
+      errorEl.style.display = 'block';
+    }
+
+    function hideError() {
+      const errorEl = document.getElementById('errorMessage');
+      errorEl.style.display = 'none';
+    }
+
+    // Load statistics
+    async function loadStats() {
+      if (!isApiConnected) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/stats`);
+        const data = await response.json();
+        
+        document.getElementById('totalUsers').textContent = data.total_users.toLocaleString();
+        document.getElementById('totalCoins').textContent = data.total_coins.toLocaleString();
+        document.getElementById('totalReferrals').textContent = data.total_referrals.toLocaleString();
+      } catch (error) {
+        console.error('Failed to load stats:', error);
+      }
+    }
+
+    // Load leaderboard
+    async function loadLeaderboard() {
+      if (!isApiConnected) {
+        document.getElementById('leaderboardContainer').innerHTML = 
+          '<div class="alert alert-danger">API not connected. Start the API server first.</div>';
+        return;
+      }
+
+      const week = document.getElementById('weekSelector').value;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/leaderboard?week=${week}`);
+        const data = await response.json();
+        
+        const container = document.getElementById('leaderboardContainer');
+        
+        if (!data.leaderboard || data.leaderboard.length === 0) {
+          container.innerHTML = '<div class="loading">No users yet. Start playing the game!</div>';
+          return;
+        }
+        
+        let html = '<table class="leaderboard-table"><thead><tr>';
+        html += '<th>Rank</th><th>User</th><th>Coins</th><th>Level</th><th>Phone</th><th>Status</th><th>Actions</th>';
+        html += '</tr></thead><tbody>';
+        
+        data.leaderboard.forEach((user, index) => {
+          let rankClass = '';
+          let rankEmoji = '';
+          if (index === 0) { rankClass = 'gold'; rankEmoji = '🥇'; }
+          else if (index === 1) { rankClass = 'silver'; rankEmoji = '🥈'; }
+          else if (index === 2) { rankClass = 'bronze'; rankEmoji = '🥉'; }
+          
+          const phoneDisplay = user.phone_number 
+            ? `<div class="user-phone">${user.phone_number}</div><div class="phone-verified">✓ Verified</div>`
+            : `<div class="phone-missing">⚠️ No phone number</div>`;
+          
+          const statusClass = user.reward_paid ? 'paid' : 'pending';
+          const statusText = user.reward_paid ? '✅ Paid' : '⏳ Pending';
+          
+          html += `<tr>
+            <td><span class="rank ${rankClass}">${rankEmoji} ${index + 1}</span></td>
+            <td>
+              <div class="user-info">
+                <div class="user-name">${user.username || 'User ' + user.user_id}</div>
+                <div class="user-id">ID: ${user.user_id}</div>
+              </div>
+            </td>
+            <td><span class="coins">${user.coins.toLocaleString()}</span></td>
+            <td><span class="level">Level ${user.level}</span></td>
+            <td>${phoneDisplay}</td>
+            <td><span class="reward-status ${statusClass}">${statusText}</span></td>
+            <td>
+              ${!user.reward_paid ? 
+                `<button class="btn btn-success btn-small" onclick="markAsPaid(${user.user_id})">Mark Paid</button>` :
+                `<button class="btn btn-danger btn-small" onclick="undoPaid(${user.user_id})">Undo</button>`
+              }
+            </td>
+          </tr>`;
+        });
+        
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      } catch (error) {
+        console.error('Failed to load leaderboard:', error);
+        showError('Failed to load leaderboard. Check console for details.');
+      }
+    }
+
+    // Mark user as paid
+    async function markAsPaid(userId) {
+      if (!confirm('Mark this user as paid (25 ETB airtime)?')) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/mark_paid`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId, week: 'current' })
+        });
+        
+        if (response.ok) {
+          alert('✅ Marked as paid!');
+          loadLeaderboard();
+          loadActivityLog();
+        }
+      } catch (error) {
+        alert('Failed to mark as paid');
+      }
+    }
+
+    // Undo paid status
+    async function undoPaid(userId) {
+      if (!confirm('Undo paid status for this user?')) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/undo_paid`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId, week: 'current' })
+        });
+        
+        if (response.ok) {
+          alert('✅ Payment status undone!');
+          loadLeaderboard();
+        }
+      } catch (error) {
+        alert('Failed to undo');
+      }
+    }
+
+    // Mark all as paid
+    async function markAllAsPaid() {
+      if (!confirm('Mark ALL top 10 users as paid? This will record 250 ETB total payout.')) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/mark_all_paid`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ week: 'current' })
+        });
+        
+        if (response.ok) {
+          alert('✅ All marked as paid!');
+          loadLeaderboard();
+          loadActivityLog();
+        }
+      } catch (error) {
+        alert('Failed to mark all as paid');
+      }
+    }
+
+    // Export to CSV
+    function exportToCSV() {
+      window.open(`${API_URL}/api/admin/export?format=csv&week=current`, '_blank');
+    }
+
+    // Load activity log
+    async function loadActivityLog() {
+      if (!isApiConnected) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/activity_log`);
+        const data = await response.json();
+        
+        const logContainer = document.getElementById('activityLog');
+        
+        if (!data.activities || data.activities.length === 0) {
+          logContainer.innerHTML = '<div class="loading">No activity yet</div>';
+          return;
+        }
+        
+        logContainer.innerHTML = '';
+        
+        data.activities.slice(0, 20).forEach(activity => {
+          const item = document.createElement('div');
+          item.className = 'activity-item';
+          item.innerHTML = `
+            <div class="activity-time">${new Date(activity.timestamp).toLocaleString()}</div>
+            <div class="activity-text">${activity.message}</div>
+          `;
+          logContainer.appendChild(item);
+        });
+      } catch (error) {
+        console.error('Failed to load activity log:', error);
+      }
+    }
+
+    // Initialize
+    async function init() {
+      // Check API connection first
+      const connected = await checkApiConnection();
+      
+      if (connected) {
+        await loadStats();
+        await loadLeaderboard();
+        await loadActivityLog();
+        
+        // Refresh every 30 seconds
+        setInterval(async () => {
+          await checkApiConnection();
+          if (isApiConnected) {
+            await loadStats();
+            await loadLeaderboard();
+          }
+        }, 30000);
+      } else {
+        // Retry connection every 5 seconds
+        setInterval(async () => {
+          const connected = await checkApiConnection();
+          if (connected) {
+            init();
+          }
+        }, 5000);
+      }
+    }
+
+    // Start when page loads
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
