@@ -761,6 +761,10 @@ html {
   animation: slideUp 0.3s ease;
 }
 
+.signout-modal {
+  background: linear-gradient(135deg, #ef5350, #e53935);
+}
+
 @keyframes slideUp {
   from {
     transform: translateY(50px);
@@ -777,6 +781,10 @@ html {
   text-align: center;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
+}
+
+.danger-header {
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .phone-modal-header h2 {
@@ -820,6 +828,88 @@ html {
   color: #667eea;
   font-size: 24px;
   font-weight: 700;
+}
+
+.danger-warning {
+  background: #ffebee;
+  border: 2px solid #ef5350;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.warning-icon {
+  font-size: 64px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.warning-text strong {
+  display: block;
+  color: #c62828;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.warning-text ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.warning-text li {
+  padding: 8px 0;
+  color: #d32f2f;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.warning-note {
+  margin-top: 15px;
+  padding: 10px;
+  background: white;
+  border-left: 4px solid #ef5350;
+  color: #c62828;
+  font-weight: 600;
+}
+
+.signout-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.btn-cancel, .btn-delete {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-cancel {
+  background: linear-gradient(135deg, #4caf50, #66bb6a);
+  color: white;
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #f44336, #e53935);
+  color: white;
+}
+
+.btn-cancel:hover, .btn-delete:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.nav-signout {
+  color: #ff6b6b !important;
+}
+
+.nav-signout:hover {
+  background: rgba(255, 107, 107, 0.1);
 }
 
 .verification-step {
